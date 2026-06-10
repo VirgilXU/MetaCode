@@ -1,0 +1,25 @@
+{
+  "metacode_count": 15,
+  "workflow_count": 10,
+  "total_workflow_steps": 44,
+  "reused_metacode_count": 11,
+  "unused_metacode_count": 0,
+  "usage": {
+    "io.read_markdown_file": 6,
+    "io.write_markdown": 6,
+    "text.clean_text_basic": 5,
+    "io.read_json_file": 4,
+    "io.save_csv": 4,
+    "transform.json_items_to_rows": 4,
+    "text.extract_markdown_headings": 3,
+    "analysis.count_frequency": 2,
+    "analysis.count_text_stats": 2,
+    "text.extract_keywords_basic": 2,
+    "text.simple_summary": 2,
+    "data.filter_rows_contains": 1,
+    "data.pick_fields": 1,
+    "data.sort_rows": 1,
+    "transform.headings_to_rows": 1
+  },
+  "unused": []
+}

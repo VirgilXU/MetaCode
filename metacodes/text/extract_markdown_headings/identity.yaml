@@ -1,0 +1,23 @@
+id: text.extract_markdown_headings
+name: Extract Markdown Headings
+version: 0.1.0
+language: python
+category: text
+purpose: Extract markdown headings from data.raw_text.
+use_cases:
+  - Build note outline
+not_for:
+  - Full markdown parsing
+context_read:
+  - data.raw_text
+context_write:
+  - data.headings
+dependencies: []
+constraints:
+  - ATX headings only
+side_effects: []
+failure_modes:
+  - data.raw_text missing
+runner: runner.py
+tests:
+  - tests/test_workflows.py

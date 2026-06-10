@@ -1,0 +1,8 @@
+id: broken_missing_summary_chain
+name: Broken Missing Summary Chain
+inputs:
+  file_path: examples/sample_note.md
+  output_path: examples/outputs/planned_summary.md
+steps:
+  - text.simple_summary
+  - io.write_markdown

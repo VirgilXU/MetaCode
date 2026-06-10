@@ -1,0 +1,39 @@
+{
+  "items": [
+    {
+      "id": "T1",
+      "title": "Build context runtime",
+      "domain": "core",
+      "status": "done",
+      "priority": "high"
+    },
+    {
+      "id": "T2",
+      "title": "Add markdown workflows",
+      "domain": "workflow",
+      "status": "done",
+      "priority": "high"
+    },
+    {
+      "id": "T3",
+      "title": "Create JSON export path",
+      "domain": "data",
+      "status": "active",
+      "priority": "medium"
+    },
+    {
+      "id": "T4",
+      "title": "Record failure cases",
+      "domain": "quality",
+      "status": "active",
+      "priority": "high"
+    },
+    {
+      "id": "T5",
+      "title": "Explore embedding retrieval",
+      "domain": "intelligence",
+      "status": "later",
+      "priority": "low"
+    }
+  ]
+}

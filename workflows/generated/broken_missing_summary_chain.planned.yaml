@@ -1,0 +1,14 @@
+id: broken_missing_summary_chain_planned
+name: Broken Missing Summary Chain Planned
+inputs:
+  file_path: examples/sample_note.md
+  output_path: examples/outputs/planned_summary.md
+steps:
+- io.read_markdown_file
+- text.clean_text_basic
+- text.simple_summary
+- io.write_markdown
+planned_from: broken_missing_summary_chain
+inserted_steps:
+- io.read_markdown_file
+- text.clean_text_basic

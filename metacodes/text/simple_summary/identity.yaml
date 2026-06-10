@@ -1,0 +1,23 @@
+id: text.simple_summary
+name: Simple Summary
+version: 0.1.0
+language: python
+category: text
+purpose: Create a rule-based short summary from data.clean_text.
+use_cases:
+  - Produce a cheap non-LLM note summary
+not_for:
+  - Semantic summarization
+context_read:
+  - data.clean_text
+context_write:
+  - data.summary
+dependencies: []
+constraints:
+  - Summary is extractive and simple
+side_effects: []
+failure_modes:
+  - data.clean_text missing
+runner: runner.py
+tests:
+  - tests/test_workflows.py

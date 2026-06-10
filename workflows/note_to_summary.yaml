@@ -1,0 +1,10 @@
+id: note_to_summary
+name: Note To Summary
+inputs:
+  file_path: examples/sample_note.md
+  output_path: examples/outputs/summary.md
+steps:
+  - io.read_markdown_file
+  - text.clean_text_basic
+  - text.simple_summary
+  - io.write_markdown

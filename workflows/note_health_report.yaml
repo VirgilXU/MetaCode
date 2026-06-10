@@ -1,0 +1,11 @@
+id: note_health_report
+name: Note Health Report
+inputs:
+  file_path: examples/sample_note.md
+  output_path: examples/outputs/health.md
+steps:
+  - io.read_markdown_file
+  - text.clean_text_basic
+  - text.extract_markdown_headings
+  - analysis.count_text_stats
+  - io.write_markdown

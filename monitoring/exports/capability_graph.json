@@ -1,0 +1,708 @@
+{
+  "metacode_count": 15,
+  "workflow_count": 10,
+  "field_count": 16,
+  "edge_count": 26,
+  "nodes": {
+    "analysis.count_frequency": {
+      "id": "analysis.count_frequency",
+      "category": "analysis",
+      "reads": [
+        "data.clean_text"
+      ],
+      "writes": [
+        "data.frequency"
+      ],
+      "usage": 2,
+      "in_degree": 1,
+      "out_degree": 0,
+      "degree": 1,
+      "bridge_score": 3
+    },
+    "analysis.count_text_stats": {
+      "id": "analysis.count_text_stats",
+      "category": "analysis",
+      "reads": [
+        "data.clean_text",
+        "data.headings"
+      ],
+      "writes": [
+        "data.text_stats"
+      ],
+      "usage": 2,
+      "in_degree": 2,
+      "out_degree": 0,
+      "degree": 2,
+      "bridge_score": 4
+    },
+    "data.filter_rows_contains": {
+      "id": "data.filter_rows_contains",
+      "category": "data",
+      "reads": [
+        "data.rows",
+        "inputs.filter_field",
+        "inputs.filter_value"
+      ],
+      "writes": [
+        "data.rows"
+      ],
+      "usage": 1,
+      "in_degree": 4,
+      "out_degree": 3,
+      "degree": 7,
+      "bridge_score": 8
+    },
+    "data.pick_fields": {
+      "id": "data.pick_fields",
+      "category": "data",
+      "reads": [
+        "data.rows",
+        "inputs.fields"
+      ],
+      "writes": [
+        "data.rows"
+      ],
+      "usage": 1,
+      "in_degree": 4,
+      "out_degree": 3,
+      "degree": 7,
+      "bridge_score": 8
+    },
+    "data.sort_rows": {
+      "id": "data.sort_rows",
+      "category": "data",
+      "reads": [
+        "data.rows",
+        "inputs.sort_field"
+      ],
+      "writes": [
+        "data.rows"
+      ],
+      "usage": 1,
+      "in_degree": 4,
+      "out_degree": 3,
+      "degree": 7,
+      "bridge_score": 8
+    },
+    "io.read_json_file": {
+      "id": "io.read_json_file",
+      "category": "io",
+      "reads": [
+        "inputs.file_path"
+      ],
+      "writes": [
+        "data.json"
+      ],
+      "usage": 4,
+      "in_degree": 0,
+      "out_degree": 1,
+      "degree": 1,
+      "bridge_score": 5
+    },
+    "io.read_markdown_file": {
+      "id": "io.read_markdown_file",
+      "category": "io",
+      "reads": [
+        "inputs.file_path"
+      ],
+      "writes": [
+        "data.raw_text"
+      ],
+      "usage": 6,
+      "in_degree": 0,
+      "out_degree": 2,
+      "degree": 2,
+      "bridge_score": 8
+    },
+    "io.save_csv": {
+      "id": "io.save_csv",
+      "category": "io",
+      "reads": [
+        "data.rows",
+        "inputs.output_path"
+      ],
+      "writes": [
+        "artifacts.output_file"
+      ],
+      "usage": 4,
+      "in_degree": 5,
+      "out_degree": 0,
+      "degree": 5,
+      "bridge_score": 9
+    },
+    "io.write_markdown": {
+      "id": "io.write_markdown",
+      "category": "io",
+      "reads": [
+        "inputs.output_path"
+      ],
+      "writes": [
+        "artifacts.output_file"
+      ],
+      "usage": 6,
+      "in_degree": 0,
+      "out_degree": 0,
+      "degree": 0,
+      "bridge_score": 6
+    },
+    "text.clean_text_basic": {
+      "id": "text.clean_text_basic",
+      "category": "text",
+      "reads": [
+        "data.raw_text"
+      ],
+      "writes": [
+        "data.clean_text"
+      ],
+      "usage": 5,
+      "in_degree": 1,
+      "out_degree": 4,
+      "degree": 5,
+      "bridge_score": 10
+    },
+    "text.extract_keywords_basic": {
+      "id": "text.extract_keywords_basic",
+      "category": "text",
+      "reads": [
+        "data.clean_text"
+      ],
+      "writes": [
+        "data.keywords"
+      ],
+      "usage": 2,
+      "in_degree": 1,
+      "out_degree": 0,
+      "degree": 1,
+      "bridge_score": 3
+    },
+    "text.extract_markdown_headings": {
+      "id": "text.extract_markdown_headings",
+      "category": "text",
+      "reads": [
+        "data.raw_text"
+      ],
+      "writes": [
+        "data.headings"
+      ],
+      "usage": 3,
+      "in_degree": 1,
+      "out_degree": 2,
+      "degree": 3,
+      "bridge_score": 6
+    },
+    "text.simple_summary": {
+      "id": "text.simple_summary",
+      "category": "text",
+      "reads": [
+        "data.clean_text"
+      ],
+      "writes": [
+        "data.summary"
+      ],
+      "usage": 2,
+      "in_degree": 1,
+      "out_degree": 0,
+      "degree": 1,
+      "bridge_score": 3
+    },
+    "transform.headings_to_rows": {
+      "id": "transform.headings_to_rows",
+      "category": "transform",
+      "reads": [
+        "data.headings"
+      ],
+      "writes": [
+        "data.rows"
+      ],
+      "usage": 1,
+      "in_degree": 1,
+      "out_degree": 4,
+      "degree": 5,
+      "bridge_score": 6
+    },
+    "transform.json_items_to_rows": {
+      "id": "transform.json_items_to_rows",
+      "category": "transform",
+      "reads": [
+        "data.json"
+      ],
+      "writes": [
+        "data.rows"
+      ],
+      "usage": 4,
+      "in_degree": 1,
+      "out_degree": 4,
+      "degree": 5,
+      "bridge_score": 9
+    }
+  },
+  "edges": [
+    {
+      "from": "data.filter_rows_contains",
+      "to": "data.pick_fields",
+      "field": "data.rows",
+      "from_category": "data",
+      "to_category": "data"
+    },
+    {
+      "from": "data.filter_rows_contains",
+      "to": "data.sort_rows",
+      "field": "data.rows",
+      "from_category": "data",
+      "to_category": "data"
+    },
+    {
+      "from": "data.filter_rows_contains",
+      "to": "io.save_csv",
+      "field": "data.rows",
+      "from_category": "data",
+      "to_category": "io"
+    },
+    {
+      "from": "data.pick_fields",
+      "to": "data.filter_rows_contains",
+      "field": "data.rows",
+      "from_category": "data",
+      "to_category": "data"
+    },
+    {
+      "from": "data.pick_fields",
+      "to": "data.sort_rows",
+      "field": "data.rows",
+      "from_category": "data",
+      "to_category": "data"
+    },
+    {
+      "from": "data.pick_fields",
+      "to": "io.save_csv",
+      "field": "data.rows",
+      "from_category": "data",
+      "to_category": "io"
+    },
+    {
+      "from": "data.sort_rows",
+      "to": "data.filter_rows_contains",
+      "field": "data.rows",
+      "from_category": "data",
+      "to_category": "data"
+    },
+    {
+      "from": "data.sort_rows",
+      "to": "data.pick_fields",
+      "field": "data.rows",
+      "from_category": "data",
+      "to_category": "data"
+    },
+    {
+      "from": "data.sort_rows",
+      "to": "io.save_csv",
+      "field": "data.rows",
+      "from_category": "data",
+      "to_category": "io"
+    },
+    {
+      "from": "transform.headings_to_rows",
+      "to": "data.filter_rows_contains",
+      "field": "data.rows",
+      "from_category": "transform",
+      "to_category": "data"
+    },
+    {
+      "from": "transform.headings_to_rows",
+      "to": "data.pick_fields",
+      "field": "data.rows",
+      "from_category": "transform",
+      "to_category": "data"
+    },
+    {
+      "from": "transform.headings_to_rows",
+      "to": "data.sort_rows",
+      "field": "data.rows",
+      "from_category": "transform",
+      "to_category": "data"
+    },
+    {
+      "from": "transform.headings_to_rows",
+      "to": "io.save_csv",
+      "field": "data.rows",
+      "from_category": "transform",
+      "to_category": "io"
+    },
+    {
+      "from": "transform.json_items_to_rows",
+      "to": "data.filter_rows_contains",
+      "field": "data.rows",
+      "from_category": "transform",
+      "to_category": "data"
+    },
+    {
+      "from": "transform.json_items_to_rows",
+      "to": "data.pick_fields",
+      "field": "data.rows",
+      "from_category": "transform",
+      "to_category": "data"
+    },
+    {
+      "from": "transform.json_items_to_rows",
+      "to": "data.sort_rows",
+      "field": "data.rows",
+      "from_category": "transform",
+      "to_category": "data"
+    },
+    {
+      "from": "transform.json_items_to_rows",
+      "to": "io.save_csv",
+      "field": "data.rows",
+      "from_category": "transform",
+      "to_category": "io"
+    },
+    {
+      "from": "io.read_json_file",
+      "to": "transform.json_items_to_rows",
+      "field": "data.json",
+      "from_category": "io",
+      "to_category": "transform"
+    },
+    {
+      "from": "io.read_markdown_file",
+      "to": "text.clean_text_basic",
+      "field": "data.raw_text",
+      "from_category": "io",
+      "to_category": "text"
+    },
+    {
+      "from": "io.read_markdown_file",
+      "to": "text.extract_markdown_headings",
+      "field": "data.raw_text",
+      "from_category": "io",
+      "to_category": "text"
+    },
+    {
+      "from": "text.clean_text_basic",
+      "to": "analysis.count_frequency",
+      "field": "data.clean_text",
+      "from_category": "text",
+      "to_category": "analysis"
+    },
+    {
+      "from": "text.clean_text_basic",
+      "to": "analysis.count_text_stats",
+      "field": "data.clean_text",
+      "from_category": "text",
+      "to_category": "analysis"
+    },
+    {
+      "from": "text.clean_text_basic",
+      "to": "text.extract_keywords_basic",
+      "field": "data.clean_text",
+      "from_category": "text",
+      "to_category": "text"
+    },
+    {
+      "from": "text.clean_text_basic",
+      "to": "text.simple_summary",
+      "field": "data.clean_text",
+      "from_category": "text",
+      "to_category": "text"
+    },
+    {
+      "from": "text.extract_markdown_headings",
+      "to": "analysis.count_text_stats",
+      "field": "data.headings",
+      "from_category": "text",
+      "to_category": "analysis"
+    },
+    {
+      "from": "text.extract_markdown_headings",
+      "to": "transform.headings_to_rows",
+      "field": "data.headings",
+      "from_category": "text",
+      "to_category": "transform"
+    }
+  ],
+  "field_producers": {
+    "artifacts.output_file": [
+      "io.save_csv",
+      "io.write_markdown"
+    ],
+    "data.clean_text": [
+      "text.clean_text_basic"
+    ],
+    "data.frequency": [
+      "analysis.count_frequency"
+    ],
+    "data.headings": [
+      "text.extract_markdown_headings"
+    ],
+    "data.json": [
+      "io.read_json_file"
+    ],
+    "data.keywords": [
+      "text.extract_keywords_basic"
+    ],
+    "data.raw_text": [
+      "io.read_markdown_file"
+    ],
+    "data.rows": [
+      "data.filter_rows_contains",
+      "data.pick_fields",
+      "data.sort_rows",
+      "transform.headings_to_rows",
+      "transform.json_items_to_rows"
+    ],
+    "data.summary": [
+      "text.simple_summary"
+    ],
+    "data.text_stats": [
+      "analysis.count_text_stats"
+    ]
+  },
+  "field_consumers": {
+    "data.clean_text": [
+      "analysis.count_frequency",
+      "analysis.count_text_stats",
+      "text.extract_keywords_basic",
+      "text.simple_summary"
+    ],
+    "data.headings": [
+      "analysis.count_text_stats",
+      "transform.headings_to_rows"
+    ],
+    "data.json": [
+      "transform.json_items_to_rows"
+    ],
+    "data.raw_text": [
+      "text.clean_text_basic",
+      "text.extract_markdown_headings"
+    ],
+    "data.rows": [
+      "data.filter_rows_contains",
+      "data.pick_fields",
+      "data.sort_rows",
+      "io.save_csv"
+    ],
+    "inputs.fields": [
+      "data.pick_fields"
+    ],
+    "inputs.file_path": [
+      "io.read_json_file",
+      "io.read_markdown_file"
+    ],
+    "inputs.filter_field": [
+      "data.filter_rows_contains"
+    ],
+    "inputs.filter_value": [
+      "data.filter_rows_contains"
+    ],
+    "inputs.output_path": [
+      "io.save_csv",
+      "io.write_markdown"
+    ],
+    "inputs.sort_field": [
+      "data.sort_rows"
+    ]
+  },
+  "category_edges": {
+    "data->data": 6,
+    "data->io": 3,
+    "io->text": 2,
+    "io->transform": 1,
+    "text->analysis": 3,
+    "text->text": 2,
+    "text->transform": 1,
+    "transform->data": 6,
+    "transform->io": 2
+  },
+  "input_only_fields": [
+    "inputs.fields",
+    "inputs.file_path",
+    "inputs.filter_field",
+    "inputs.filter_value",
+    "inputs.output_path",
+    "inputs.sort_field"
+  ],
+  "unresolved_fields": [],
+  "orphan_outputs": [
+    "artifacts.output_file",
+    "data.frequency",
+    "data.keywords",
+    "data.summary",
+    "data.text_stats"
+  ],
+  "core_nodes": [
+    {
+      "id": "io.read_markdown_file",
+      "category": "io",
+      "reads": [
+        "inputs.file_path"
+      ],
+      "writes": [
+        "data.raw_text"
+      ],
+      "usage": 6,
+      "in_degree": 0,
+      "out_degree": 2,
+      "degree": 2,
+      "bridge_score": 8
+    },
+    {
+      "id": "io.write_markdown",
+      "category": "io",
+      "reads": [
+        "inputs.output_path"
+      ],
+      "writes": [
+        "artifacts.output_file"
+      ],
+      "usage": 6,
+      "in_degree": 0,
+      "out_degree": 0,
+      "degree": 0,
+      "bridge_score": 6
+    },
+    {
+      "id": "text.clean_text_basic",
+      "category": "text",
+      "reads": [
+        "data.raw_text"
+      ],
+      "writes": [
+        "data.clean_text"
+      ],
+      "usage": 5,
+      "in_degree": 1,
+      "out_degree": 4,
+      "degree": 5,
+      "bridge_score": 10
+    },
+    {
+      "id": "io.save_csv",
+      "category": "io",
+      "reads": [
+        "data.rows",
+        "inputs.output_path"
+      ],
+      "writes": [
+        "artifacts.output_file"
+      ],
+      "usage": 4,
+      "in_degree": 5,
+      "out_degree": 0,
+      "degree": 5,
+      "bridge_score": 9
+    },
+    {
+      "id": "transform.json_items_to_rows",
+      "category": "transform",
+      "reads": [
+        "data.json"
+      ],
+      "writes": [
+        "data.rows"
+      ],
+      "usage": 4,
+      "in_degree": 1,
+      "out_degree": 4,
+      "degree": 5,
+      "bridge_score": 9
+    }
+  ],
+  "bridge_nodes": [
+    {
+      "id": "text.clean_text_basic",
+      "category": "text",
+      "reads": [
+        "data.raw_text"
+      ],
+      "writes": [
+        "data.clean_text"
+      ],
+      "usage": 5,
+      "in_degree": 1,
+      "out_degree": 4,
+      "degree": 5,
+      "bridge_score": 10
+    },
+    {
+      "id": "transform.json_items_to_rows",
+      "category": "transform",
+      "reads": [
+        "data.json"
+      ],
+      "writes": [
+        "data.rows"
+      ],
+      "usage": 4,
+      "in_degree": 1,
+      "out_degree": 4,
+      "degree": 5,
+      "bridge_score": 9
+    },
+    {
+      "id": "io.save_csv",
+      "category": "io",
+      "reads": [
+        "data.rows",
+        "inputs.output_path"
+      ],
+      "writes": [
+        "artifacts.output_file"
+      ],
+      "usage": 4,
+      "in_degree": 5,
+      "out_degree": 0,
+      "degree": 5,
+      "bridge_score": 9
+    },
+    {
+      "id": "data.filter_rows_contains",
+      "category": "data",
+      "reads": [
+        "data.rows",
+        "inputs.filter_field",
+        "inputs.filter_value"
+      ],
+      "writes": [
+        "data.rows"
+      ],
+      "usage": 1,
+      "in_degree": 4,
+      "out_degree": 3,
+      "degree": 7,
+      "bridge_score": 8
+    },
+    {
+      "id": "data.pick_fields",
+      "category": "data",
+      "reads": [
+        "data.rows",
+        "inputs.fields"
+      ],
+      "writes": [
+        "data.rows"
+      ],
+      "usage": 1,
+      "in_degree": 4,
+      "out_degree": 3,
+      "degree": 7,
+      "bridge_score": 8
+    }
+  ],
+  "usage": {
+    "io.read_markdown_file": 6,
+    "io.write_markdown": 6,
+    "text.clean_text_basic": 5,
+    "io.read_json_file": 4,
+    "io.save_csv": 4,
+    "transform.json_items_to_rows": 4,
+    "text.extract_markdown_headings": 3,
+    "analysis.count_frequency": 2,
+    "analysis.count_text_stats": 2,
+    "text.extract_keywords_basic": 2,
+    "text.simple_summary": 2,
+    "data.filter_rows_contains": 1,
+    "data.pick_fields": 1,
+    "data.sort_rows": 1,
+    "transform.headings_to_rows": 1
+  }
+}

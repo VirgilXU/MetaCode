@@ -1,0 +1,23 @@
+id: text.extract_keywords_basic
+name: Extract Keywords Basic
+version: 0.1.0
+language: python
+category: text
+purpose: Extract simple keywords from data.clean_text.
+use_cases:
+  - Build lightweight note keyword reports
+not_for:
+  - Semantic keyword extraction
+context_read:
+  - data.clean_text
+context_write:
+  - data.keywords
+dependencies: []
+constraints:
+  - Rule based keyword extraction
+side_effects: []
+failure_modes:
+  - data.clean_text missing
+runner: runner.py
+tests:
+  - tests/test_stage2_unittest.py

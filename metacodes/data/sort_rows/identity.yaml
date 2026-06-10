@@ -1,0 +1,25 @@
+id: data.sort_rows
+name: Sort Rows
+version: 0.1.0
+language: python
+category: data
+purpose: Sort data.rows by inputs.sort_field.
+use_cases:
+  - Sort records before export
+not_for:
+  - Multi-key sorting
+context_read:
+  - data.rows
+  - inputs.sort_field
+context_write:
+  - data.rows
+dependencies: []
+constraints:
+  - inputs.sort_field must exist in most rows
+side_effects: []
+failure_modes:
+  - data.rows missing
+  - inputs.sort_field missing
+runner: runner.py
+tests:
+  - tests/test_stage2_unittest.py

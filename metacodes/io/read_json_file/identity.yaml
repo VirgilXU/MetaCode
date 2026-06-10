@@ -1,0 +1,24 @@
+id: io.read_json_file
+name: Read JSON File
+version: 0.1.0
+language: python
+category: io
+purpose: Read a JSON file from inputs.file_path into data.json.
+use_cases:
+  - Load local JSON datasets
+not_for:
+  - Streaming large JSON files
+context_read:
+  - inputs.file_path
+context_write:
+  - data.json
+dependencies: []
+constraints:
+  - File must contain valid JSON
+side_effects: []
+failure_modes:
+  - inputs.file_path missing
+  - invalid JSON
+runner: runner.py
+tests:
+  - tests/test_stage2_unittest.py

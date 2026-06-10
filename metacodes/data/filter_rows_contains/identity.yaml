@@ -1,0 +1,26 @@
+id: data.filter_rows_contains
+name: Filter Rows Contains
+version: 0.1.0
+language: python
+category: data
+purpose: Keep rows whose inputs.filter_field contains inputs.filter_value.
+use_cases:
+  - Filter simple tabular records
+not_for:
+  - Advanced query logic
+context_read:
+  - data.rows
+  - inputs.filter_field
+  - inputs.filter_value
+context_write:
+  - data.rows
+dependencies: []
+constraints:
+  - String contains matching only
+side_effects: []
+failure_modes:
+  - data.rows missing
+  - filter inputs missing
+runner: runner.py
+tests:
+  - tests/test_stage2_unittest.py

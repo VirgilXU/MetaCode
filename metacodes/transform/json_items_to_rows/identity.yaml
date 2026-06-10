@@ -1,0 +1,24 @@
+id: transform.json_items_to_rows
+name: JSON Items To Rows
+version: 0.1.0
+language: python
+category: transform
+purpose: Convert a JSON list or object with items into data.rows.
+use_cases:
+  - Prepare JSON records for CSV export
+not_for:
+  - Deep nested flattening
+context_read:
+  - data.json
+context_write:
+  - data.rows
+dependencies: []
+constraints:
+  - JSON must be a list or contain an items list
+side_effects: []
+failure_modes:
+  - data.json missing
+  - unsupported JSON shape
+runner: runner.py
+tests:
+  - tests/test_stage2_unittest.py

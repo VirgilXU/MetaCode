@@ -1,0 +1,24 @@
+id: io.read_markdown_file
+name: Read Markdown File
+version: 0.1.0
+language: python
+category: io
+purpose: Read a markdown file from inputs.file_path into data.raw_text.
+use_cases:
+  - Load local markdown notes
+not_for:
+  - Binary files
+context_read:
+  - inputs.file_path
+context_write:
+  - data.raw_text
+dependencies: []
+constraints:
+  - File must exist
+side_effects: []
+failure_modes:
+  - inputs.file_path missing
+  - file not found
+runner: runner.py
+tests:
+  - tests/test_workflows.py

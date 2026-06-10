@@ -1,0 +1,11 @@
+id: json_sort_by_priority_csv
+name: JSON Sort By Priority CSV
+inputs:
+  file_path: examples/sample_tasks.json
+  output_path: examples/outputs/tasks_sorted.csv
+  sort_field: priority
+steps:
+  - io.read_json_file
+  - transform.json_items_to_rows
+  - data.sort_rows
+  - io.save_csv

@@ -1,0 +1,530 @@
+{
+  "analysis.count_frequency": {
+    "id": "analysis.count_frequency",
+    "name": "Count Frequency",
+    "version": "0.1.0",
+    "language": "python",
+    "category": "analysis",
+    "purpose": "Count simple word frequency from data.clean_text.",
+    "use_cases": [
+      "Generate basic note keyword frequency"
+    ],
+    "not_for": [
+      "Language-aware NLP analysis"
+    ],
+    "context_read": [
+      "data.clean_text"
+    ],
+    "context_write": [
+      "data.frequency"
+    ],
+    "dependencies": [],
+    "constraints": [
+      "Tokenization is rule based"
+    ],
+    "side_effects": [],
+    "failure_modes": [
+      "data.clean_text missing"
+    ],
+    "runner": "runner.py",
+    "tests": [
+      "tests/test_stage2_unittest.py"
+    ],
+    "_identity_path": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\metacodes\\analysis\\count_frequency\\identity.yaml",
+    "_base_dir": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\metacodes\\analysis\\count_frequency"
+  },
+  "analysis.count_text_stats": {
+    "id": "analysis.count_text_stats",
+    "name": "Count Text Stats",
+    "version": "0.1.0",
+    "language": "python",
+    "category": "analysis",
+    "purpose": "Count simple text metrics from data.clean_text and data.headings.",
+    "use_cases": [
+      "Build note health reports"
+    ],
+    "not_for": [
+      "Deep content quality scoring"
+    ],
+    "context_read": [
+      "data.clean_text",
+      "data.headings"
+    ],
+    "context_write": [
+      "data.text_stats"
+    ],
+    "dependencies": [],
+    "constraints": [
+      "data.clean_text must be text"
+    ],
+    "side_effects": [],
+    "failure_modes": [
+      "data.clean_text missing",
+      "data.headings missing"
+    ],
+    "runner": "runner.py",
+    "tests": [
+      "tests/test_workflows.py"
+    ],
+    "_identity_path": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\metacodes\\analysis\\count_text_stats\\identity.yaml",
+    "_base_dir": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\metacodes\\analysis\\count_text_stats"
+  },
+  "data.filter_rows_contains": {
+    "id": "data.filter_rows_contains",
+    "name": "Filter Rows Contains",
+    "version": "0.1.0",
+    "language": "python",
+    "category": "data",
+    "purpose": "Keep rows whose inputs.filter_field contains inputs.filter_value.",
+    "use_cases": [
+      "Filter simple tabular records"
+    ],
+    "not_for": [
+      "Advanced query logic"
+    ],
+    "context_read": [
+      "data.rows",
+      "inputs.filter_field",
+      "inputs.filter_value"
+    ],
+    "context_write": [
+      "data.rows"
+    ],
+    "dependencies": [],
+    "constraints": [
+      "String contains matching only"
+    ],
+    "side_effects": [],
+    "failure_modes": [
+      "data.rows missing",
+      "filter inputs missing"
+    ],
+    "runner": "runner.py",
+    "tests": [
+      "tests/test_stage2_unittest.py"
+    ],
+    "_identity_path": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\metacodes\\data\\filter_rows_contains\\identity.yaml",
+    "_base_dir": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\metacodes\\data\\filter_rows_contains"
+  },
+  "data.pick_fields": {
+    "id": "data.pick_fields",
+    "name": "Pick Fields",
+    "version": "0.1.0",
+    "language": "python",
+    "category": "data",
+    "purpose": "Keep only inputs.fields from data.rows.",
+    "use_cases": [
+      "Narrow exported columns"
+    ],
+    "not_for": [
+      "Renaming fields"
+    ],
+    "context_read": [
+      "data.rows",
+      "inputs.fields"
+    ],
+    "context_write": [
+      "data.rows"
+    ],
+    "dependencies": [],
+    "constraints": [
+      "inputs.fields must be a list"
+    ],
+    "side_effects": [],
+    "failure_modes": [
+      "data.rows missing",
+      "inputs.fields missing"
+    ],
+    "runner": "runner.py",
+    "tests": [
+      "tests/test_stage2_unittest.py"
+    ],
+    "_identity_path": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\metacodes\\data\\pick_fields\\identity.yaml",
+    "_base_dir": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\metacodes\\data\\pick_fields"
+  },
+  "data.sort_rows": {
+    "id": "data.sort_rows",
+    "name": "Sort Rows",
+    "version": "0.1.0",
+    "language": "python",
+    "category": "data",
+    "purpose": "Sort data.rows by inputs.sort_field.",
+    "use_cases": [
+      "Sort records before export"
+    ],
+    "not_for": [
+      "Multi-key sorting"
+    ],
+    "context_read": [
+      "data.rows",
+      "inputs.sort_field"
+    ],
+    "context_write": [
+      "data.rows"
+    ],
+    "dependencies": [],
+    "constraints": [
+      "inputs.sort_field must exist in most rows"
+    ],
+    "side_effects": [],
+    "failure_modes": [
+      "data.rows missing",
+      "inputs.sort_field missing"
+    ],
+    "runner": "runner.py",
+    "tests": [
+      "tests/test_stage2_unittest.py"
+    ],
+    "_identity_path": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\metacodes\\data\\sort_rows\\identity.yaml",
+    "_base_dir": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\metacodes\\data\\sort_rows"
+  },
+  "io.read_json_file": {
+    "id": "io.read_json_file",
+    "name": "Read JSON File",
+    "version": "0.1.0",
+    "language": "python",
+    "category": "io",
+    "purpose": "Read a JSON file from inputs.file_path into data.json.",
+    "use_cases": [
+      "Load local JSON datasets"
+    ],
+    "not_for": [
+      "Streaming large JSON files"
+    ],
+    "context_read": [
+      "inputs.file_path"
+    ],
+    "context_write": [
+      "data.json"
+    ],
+    "dependencies": [],
+    "constraints": [
+      "File must contain valid JSON"
+    ],
+    "side_effects": [],
+    "failure_modes": [
+      "inputs.file_path missing",
+      "invalid JSON"
+    ],
+    "runner": "runner.py",
+    "tests": [
+      "tests/test_stage2_unittest.py"
+    ],
+    "_identity_path": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\metacodes\\io\\read_json_file\\identity.yaml",
+    "_base_dir": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\metacodes\\io\\read_json_file"
+  },
+  "io.read_markdown_file": {
+    "id": "io.read_markdown_file",
+    "name": "Read Markdown File",
+    "version": "0.1.0",
+    "language": "python",
+    "category": "io",
+    "purpose": "Read a markdown file from inputs.file_path into data.raw_text.",
+    "use_cases": [
+      "Load local markdown notes"
+    ],
+    "not_for": [
+      "Binary files"
+    ],
+    "context_read": [
+      "inputs.file_path"
+    ],
+    "context_write": [
+      "data.raw_text"
+    ],
+    "dependencies": [],
+    "constraints": [
+      "File must exist"
+    ],
+    "side_effects": [],
+    "failure_modes": [
+      "inputs.file_path missing",
+      "file not found"
+    ],
+    "runner": "runner.py",
+    "tests": [
+      "tests/test_workflows.py"
+    ],
+    "_identity_path": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\metacodes\\io\\read_markdown_file\\identity.yaml",
+    "_base_dir": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\metacodes\\io\\read_markdown_file"
+  },
+  "io.save_csv": {
+    "id": "io.save_csv",
+    "name": "Save CSV",
+    "version": "0.1.0",
+    "language": "python",
+    "category": "io",
+    "purpose": "Save data.rows as a CSV file.",
+    "use_cases": [
+      "Export tabular workflow output"
+    ],
+    "not_for": [
+      "Nested object serialization"
+    ],
+    "context_read": [
+      "data.rows",
+      "inputs.output_path"
+    ],
+    "context_write": [
+      "artifacts.output_file"
+    ],
+    "dependencies": [],
+    "constraints": [
+      "data.rows must be a list of dictionaries"
+    ],
+    "side_effects": [
+      "Writes a local file"
+    ],
+    "failure_modes": [
+      "data.rows missing",
+      "inputs.output_path missing"
+    ],
+    "runner": "runner.py",
+    "tests": [
+      "tests/test_stage2_unittest.py"
+    ],
+    "_identity_path": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\metacodes\\io\\save_csv\\identity.yaml",
+    "_base_dir": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\metacodes\\io\\save_csv"
+  },
+  "io.write_markdown": {
+    "id": "io.write_markdown",
+    "name": "Write Markdown",
+    "version": "0.1.0",
+    "language": "python",
+    "category": "io",
+    "purpose": "Write a markdown report from available context data.",
+    "use_cases": [
+      "Save generated note reports"
+    ],
+    "not_for": [
+      "Binary output"
+    ],
+    "context_read": [
+      "inputs.output_path"
+    ],
+    "context_write": [
+      "artifacts.output_file"
+    ],
+    "dependencies": [],
+    "constraints": [
+      "inputs.output_path must be writable"
+    ],
+    "side_effects": [
+      "Writes a local file"
+    ],
+    "failure_modes": [
+      "inputs.output_path missing"
+    ],
+    "runner": "runner.py",
+    "tests": [
+      "tests/test_workflows.py"
+    ],
+    "_identity_path": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\metacodes\\io\\write_markdown\\identity.yaml",
+    "_base_dir": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\metacodes\\io\\write_markdown"
+  },
+  "text.clean_text_basic": {
+    "id": "text.clean_text_basic",
+    "name": "Clean Text Basic",
+    "version": "0.1.0",
+    "language": "python",
+    "category": "text",
+    "purpose": "Normalize whitespace in raw text for downstream processing.",
+    "use_cases": [
+      "Clean markdown text before summary"
+    ],
+    "not_for": [
+      "Complex NLP normalization"
+    ],
+    "context_read": [
+      "data.raw_text"
+    ],
+    "context_write": [
+      "data.clean_text"
+    ],
+    "dependencies": [],
+    "constraints": [
+      "data.raw_text must be text"
+    ],
+    "side_effects": [],
+    "failure_modes": [
+      "data.raw_text missing"
+    ],
+    "runner": "runner.py",
+    "tests": [
+      "tests/test_workflows.py"
+    ],
+    "_identity_path": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\metacodes\\text\\clean_text_basic\\identity.yaml",
+    "_base_dir": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\metacodes\\text\\clean_text_basic"
+  },
+  "text.extract_keywords_basic": {
+    "id": "text.extract_keywords_basic",
+    "name": "Extract Keywords Basic",
+    "version": "0.1.0",
+    "language": "python",
+    "category": "text",
+    "purpose": "Extract simple keywords from data.clean_text.",
+    "use_cases": [
+      "Build lightweight note keyword reports"
+    ],
+    "not_for": [
+      "Semantic keyword extraction"
+    ],
+    "context_read": [
+      "data.clean_text"
+    ],
+    "context_write": [
+      "data.keywords"
+    ],
+    "dependencies": [],
+    "constraints": [
+      "Rule based keyword extraction"
+    ],
+    "side_effects": [],
+    "failure_modes": [
+      "data.clean_text missing"
+    ],
+    "runner": "runner.py",
+    "tests": [
+      "tests/test_stage2_unittest.py"
+    ],
+    "_identity_path": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\metacodes\\text\\extract_keywords_basic\\identity.yaml",
+    "_base_dir": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\metacodes\\text\\extract_keywords_basic"
+  },
+  "text.extract_markdown_headings": {
+    "id": "text.extract_markdown_headings",
+    "name": "Extract Markdown Headings",
+    "version": "0.1.0",
+    "language": "python",
+    "category": "text",
+    "purpose": "Extract markdown headings from data.raw_text.",
+    "use_cases": [
+      "Build note outline"
+    ],
+    "not_for": [
+      "Full markdown parsing"
+    ],
+    "context_read": [
+      "data.raw_text"
+    ],
+    "context_write": [
+      "data.headings"
+    ],
+    "dependencies": [],
+    "constraints": [
+      "ATX headings only"
+    ],
+    "side_effects": [],
+    "failure_modes": [
+      "data.raw_text missing"
+    ],
+    "runner": "runner.py",
+    "tests": [
+      "tests/test_workflows.py"
+    ],
+    "_identity_path": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\metacodes\\text\\extract_markdown_headings\\identity.yaml",
+    "_base_dir": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\metacodes\\text\\extract_markdown_headings"
+  },
+  "text.simple_summary": {
+    "id": "text.simple_summary",
+    "name": "Simple Summary",
+    "version": "0.1.0",
+    "language": "python",
+    "category": "text",
+    "purpose": "Create a rule-based short summary from data.clean_text.",
+    "use_cases": [
+      "Produce a cheap non-LLM note summary"
+    ],
+    "not_for": [
+      "Semantic summarization"
+    ],
+    "context_read": [
+      "data.clean_text"
+    ],
+    "context_write": [
+      "data.summary"
+    ],
+    "dependencies": [],
+    "constraints": [
+      "Summary is extractive and simple"
+    ],
+    "side_effects": [],
+    "failure_modes": [
+      "data.clean_text missing"
+    ],
+    "runner": "runner.py",
+    "tests": [
+      "tests/test_workflows.py"
+    ],
+    "_identity_path": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\metacodes\\text\\simple_summary\\identity.yaml",
+    "_base_dir": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\metacodes\\text\\simple_summary"
+  },
+  "transform.headings_to_rows": {
+    "id": "transform.headings_to_rows",
+    "name": "Headings To Rows",
+    "version": "0.1.0",
+    "language": "python",
+    "category": "transform",
+    "purpose": "Convert data.headings into tabular data.rows.",
+    "use_cases": [
+      "Prepare note outline for export"
+    ],
+    "not_for": [
+      "CSV writing"
+    ],
+    "context_read": [
+      "data.headings"
+    ],
+    "context_write": [
+      "data.rows"
+    ],
+    "dependencies": [],
+    "constraints": [
+      "headings must be a list of dictionaries"
+    ],
+    "side_effects": [],
+    "failure_modes": [
+      "data.headings missing"
+    ],
+    "runner": "runner.py",
+    "tests": [
+      "tests/test_workflows.py"
+    ],
+    "_identity_path": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\metacodes\\transform\\headings_to_rows\\identity.yaml",
+    "_base_dir": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\metacodes\\transform\\headings_to_rows"
+  },
+  "transform.json_items_to_rows": {
+    "id": "transform.json_items_to_rows",
+    "name": "JSON Items To Rows",
+    "version": "0.1.0",
+    "language": "python",
+    "category": "transform",
+    "purpose": "Convert a JSON list or object with items into data.rows.",
+    "use_cases": [
+      "Prepare JSON records for CSV export"
+    ],
+    "not_for": [
+      "Deep nested flattening"
+    ],
+    "context_read": [
+      "data.json"
+    ],
+    "context_write": [
+      "data.rows"
+    ],
+    "dependencies": [],
+    "constraints": [
+      "JSON must be a list or contain an items list"
+    ],
+    "side_effects": [],
+    "failure_modes": [
+      "data.json missing",
+      "unsupported JSON shape"
+    ],
+    "runner": "runner.py",
+    "tests": [
+      "tests/test_stage2_unittest.py"
+    ],
+    "_identity_path": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\metacodes\\transform\\json_items_to_rows\\identity.yaml",
+    "_base_dir": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\metacodes\\transform\\json_items_to_rows"
+  }
+}

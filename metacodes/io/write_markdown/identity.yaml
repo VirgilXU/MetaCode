@@ -1,0 +1,24 @@
+id: io.write_markdown
+name: Write Markdown
+version: 0.1.0
+language: python
+category: io
+purpose: Write a markdown report from available context data.
+use_cases:
+  - Save generated note reports
+not_for:
+  - Binary output
+context_read:
+  - inputs.output_path
+context_write:
+  - artifacts.output_file
+dependencies: []
+constraints:
+  - inputs.output_path must be writable
+side_effects:
+  - Writes a local file
+failure_modes:
+  - inputs.output_path missing
+runner: runner.py
+tests:
+  - tests/test_workflows.py

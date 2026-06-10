@@ -1,0 +1,25 @@
+id: analysis.count_text_stats
+name: Count Text Stats
+version: 0.1.0
+language: python
+category: analysis
+purpose: Count simple text metrics from data.clean_text and data.headings.
+use_cases:
+  - Build note health reports
+not_for:
+  - Deep content quality scoring
+context_read:
+  - data.clean_text
+  - data.headings
+context_write:
+  - data.text_stats
+dependencies: []
+constraints:
+  - data.clean_text must be text
+side_effects: []
+failure_modes:
+  - data.clean_text missing
+  - data.headings missing
+runner: runner.py
+tests:
+  - tests/test_workflows.py

@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>MetaCode Observatory</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="brand">
+          <div class="brand-mark">M</div>
+          <div>
+            <div class="brand-title">MetaCode</div>
+            <div class="brand-subtitle">Observatory</div>
+          </div>
+        </div>
+
+        <nav class="nav-list" aria-label="Dashboard sections">
+          <a href="#overview" class="nav-link active">总览</a>
+          <a href="#workflows" class="nav-link">Workflow</a>
+          <a href="#failures" class="nav-link">失败诊断</a>
+          <a href="#graph" class="nav-link">能力图谱</a>
+          <a href="#stages" class="nav-link">阶段演进</a>
+        </nav>
+
+        <div class="sidebar-footer">
+          <div class="small-label">Data source</div>
+          <div class="mono">monitoring/exports</div>
+        </div>
+      </aside>
+
+      <main class="main">
+        <header class="topbar">
+          <div>
+            <h1>MetaCode 工程观察台</h1>
+            <p>查看能力、Workflow、失败诊断、图谱和阶段演进。</p>
+          </div>
+          <div class="topbar-actions">
+            <button id="refreshBtn" class="icon-button" type="button" title="刷新数据" aria-label="刷新数据">
+              <span aria-hidden="true">↻</span>
+            </button>
+            <div class="status-pill" id="healthPill">加载中</div>
+          </div>
+        </header>
+
+        <section id="overview" class="section">
+          <div class="section-heading">
+            <h2>总览</h2>
+            <span id="lastUpdated" class="muted">-</span>
+          </div>
+          <div class="metric-grid" id="metricGrid"></div>
+
+          <div class="two-column">
+            <article class="panel">
+              <div class="panel-head">
+                <h3>运行状态</h3>
+                <span class="small-label">success / failure</span>
+              </div>
+              <div class="donut-row">
+                <div class="donut" id="runDonut" aria-label="运行成功失败比例"></div>
+                <div class="stacked-list" id="runBreakdown"></div>
+              </div>
+            </article>
+
+            <article class="panel">
+              <div class="panel-head">
+                <h3>最近一次运行</h3>
+                <span class="small-label">latest run</span>
+              </div>
+              <div id="latestRun" class="detail-block"></div>
+            </article>
+          </div>
+        </section>
+
+        <section id="workflows" class="section">
+          <div class="section-heading">
+            <h2>Workflow 监控</h2>
+            <div class="segmented" id="workflowFilters">
+              <button class="selected" data-filter="all" type="button">全部</button>
+              <button data-filter="stable" type="button">稳定</button>
+              <button data-filter="generated" type="button">生成</button>
+              <button data-filter="intentional_failure" type="button">失败样例</button>
+            </div>
+          </div>
+          <div class="workflow-layout">
+            <div class="table-panel">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Workflow</th>
+                    <th>类型</th>
+                    <th>步骤</th>
+                    <th>输出</th>
+                  </tr>
+                </thead>
+                <tbody id="workflowTable"></tbody>
+              </table>
+            </div>
+            <aside class="panel detail-panel">
+              <div class="panel-head">
+                <h3>步骤链</h3>
+                <span class="small-label" id="workflowDetailType">select</span>
+              </div>
+              <div id="workflowDetail" class="step-chain empty-state">选择左侧 Workflow 查看步骤。</div>
+            </aside>
+          </div>
+        </section>
+
+        <section id="failures" class="section">
+          <div class="section-heading">
+            <h2>失败诊断</h2>
+            <span class="muted">展示最近 8 条失败记录</span>
+          </div>
+          <div class="failure-grid" id="failureGrid"></div>
+        </section>
+
+        <section id="graph" class="section">
+          <div class="section-heading">
+            <h2>能力图谱</h2>
+            <span class="muted">核心节点、桥接节点与字段连接</span>
+          </div>
+          <div class="graph-layout">
+            <article class="panel graph-panel">
+              <div class="panel-head">
+                <h3>连接图</h3>
+                <span id="graphMeta" class="small-label">-</span>
+              </div>
+              <div id="miniGraph" class="mini-graph" aria-label="能力连接图"></div>
+            </article>
+
+            <div class="graph-side">
+              <article class="panel">
+                <div class="panel-head">
+                  <h3>核心节点</h3>
+                  <span class="small-label">usage</span>
+                </div>
+                <div id="coreNodes" class="node-list"></div>
+              </article>
+
+              <article class="panel">
+                <div class="panel-head">
+                  <h3>桥接节点</h3>
+                  <span class="small-label">bridge</span>
+                </div>
+                <div id="bridgeNodes" class="node-list"></div>
+              </article>
+            </div>
+          </div>
+        </section>
+
+        <section id="stages" class="section">
+          <div class="section-heading">
+            <h2>阶段演进</h2>
+            <span class="muted">Stage 2 - Stage 7</span>
+          </div>
+          <div class="timeline" id="stageTimeline"></div>
+        </section>
+      </main>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

@@ -1,0 +1,23 @@
+id: analysis.count_frequency
+name: Count Frequency
+version: 0.1.0
+language: python
+category: analysis
+purpose: Count simple word frequency from data.clean_text.
+use_cases:
+  - Generate basic note keyword frequency
+not_for:
+  - Language-aware NLP analysis
+context_read:
+  - data.clean_text
+context_write:
+  - data.frequency
+dependencies: []
+constraints:
+  - Tokenization is rule based
+side_effects: []
+failure_modes:
+  - data.clean_text missing
+runner: runner.py
+tests:
+  - tests/test_stage2_unittest.py

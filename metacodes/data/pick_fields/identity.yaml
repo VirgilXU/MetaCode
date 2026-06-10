@@ -1,0 +1,25 @@
+id: data.pick_fields
+name: Pick Fields
+version: 0.1.0
+language: python
+category: data
+purpose: Keep only inputs.fields from data.rows.
+use_cases:
+  - Narrow exported columns
+not_for:
+  - Renaming fields
+context_read:
+  - data.rows
+  - inputs.fields
+context_write:
+  - data.rows
+dependencies: []
+constraints:
+  - inputs.fields must be a list
+side_effects: []
+failure_modes:
+  - data.rows missing
+  - inputs.fields missing
+runner: runner.py
+tests:
+  - tests/test_stage2_unittest.py

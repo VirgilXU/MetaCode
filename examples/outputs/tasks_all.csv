@@ -1,0 +1,6 @@
+domain,id,priority,status,title
+core,T1,high,done,Build context runtime
+workflow,T2,high,done,Add markdown workflows
+data,T3,medium,active,Create JSON export path
+quality,T4,high,active,Record failure cases
+intelligence,T5,low,later,Explore embedding retrieval

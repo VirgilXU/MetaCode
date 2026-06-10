@@ -1,0 +1,6 @@
+id,status,title
+T1,done,Build context runtime
+T2,done,Add markdown workflows
+T3,active,Create JSON export path
+T4,active,Record failure cases
+T5,later,Explore embedding retrieval

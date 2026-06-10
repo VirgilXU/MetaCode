@@ -1,0 +1,10 @@
+id: note_outline_export
+name: Note Outline Export
+inputs:
+  file_path: examples/sample_note.md
+  output_path: examples/outputs/outline.md
+steps:
+  - io.read_markdown_file
+  - text.extract_markdown_headings
+  - transform.headings_to_rows
+  - io.write_markdown

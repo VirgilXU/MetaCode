@@ -1,0 +1,9 @@
+id: json_to_csv_export
+name: JSON To CSV Export
+inputs:
+  file_path: examples/sample_tasks.json
+  output_path: examples/outputs/tasks_all.csv
+steps:
+  - io.read_json_file
+  - transform.json_items_to_rows
+  - io.save_csv

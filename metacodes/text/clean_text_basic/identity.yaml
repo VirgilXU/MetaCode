@@ -1,0 +1,23 @@
+id: text.clean_text_basic
+name: Clean Text Basic
+version: 0.1.0
+language: python
+category: text
+purpose: Normalize whitespace in raw text for downstream processing.
+use_cases:
+  - Clean markdown text before summary
+not_for:
+  - Complex NLP normalization
+context_read:
+  - data.raw_text
+context_write:
+  - data.clean_text
+dependencies: []
+constraints:
+  - data.raw_text must be text
+side_effects: []
+failure_modes:
+  - data.raw_text missing
+runner: runner.py
+tests:
+  - tests/test_workflows.py

@@ -1,0 +1,23 @@
+id: transform.headings_to_rows
+name: Headings To Rows
+version: 0.1.0
+language: python
+category: transform
+purpose: Convert data.headings into tabular data.rows.
+use_cases:
+  - Prepare note outline for export
+not_for:
+  - CSV writing
+context_read:
+  - data.headings
+context_write:
+  - data.rows
+dependencies: []
+constraints:
+  - headings must be a list of dictionaries
+side_effects: []
+failure_modes:
+  - data.headings missing
+runner: runner.py
+tests:
+  - tests/test_workflows.py

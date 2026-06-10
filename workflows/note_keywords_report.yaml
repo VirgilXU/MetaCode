@@ -1,0 +1,10 @@
+id: note_keywords_report
+name: Note Keywords Report
+inputs:
+  file_path: examples/sample_note.md
+  output_path: examples/outputs/keywords.md
+steps:
+  - io.read_markdown_file
+  - text.clean_text_basic
+  - text.extract_keywords_basic
+  - io.write_markdown

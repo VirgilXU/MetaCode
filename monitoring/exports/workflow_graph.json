@@ -1,0 +1,200 @@
+[
+  {
+    "workflow_id": "broken_missing_clean_text",
+    "name": "Broken Missing Clean Text",
+    "workflow_path": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\workflows\\broken_missing_clean_text.yaml",
+    "status_type": "intentional_failure",
+    "steps": [
+      "io.read_markdown_file",
+      "text.simple_summary"
+    ],
+    "generated_from": null,
+    "inserted_steps": [],
+    "output_path": "examples/outputs/broken.md"
+  },
+  {
+    "workflow_id": "broken_missing_summary_chain",
+    "name": "Broken Missing Summary Chain",
+    "workflow_path": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\workflows\\broken_missing_summary_chain.yaml",
+    "status_type": "intentional_failure",
+    "steps": [
+      "text.simple_summary",
+      "io.write_markdown"
+    ],
+    "generated_from": null,
+    "inserted_steps": [],
+    "output_path": "examples/outputs/planned_summary.md"
+  },
+  {
+    "workflow_id": "broken_missing_summary_chain_planned",
+    "name": "Broken Missing Summary Chain Planned",
+    "workflow_path": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\workflows\\generated\\broken_missing_summary_chain.planned.yaml",
+    "status_type": "generated_planned",
+    "steps": [
+      "io.read_markdown_file",
+      "text.clean_text_basic",
+      "text.simple_summary",
+      "io.write_markdown"
+    ],
+    "generated_from": "broken_missing_summary_chain",
+    "inserted_steps": [
+      "io.read_markdown_file",
+      "text.clean_text_basic"
+    ],
+    "output_path": "examples/outputs/planned_summary.md"
+  },
+  {
+    "workflow_id": "json_filter_active_csv",
+    "name": "JSON Filter Active CSV",
+    "workflow_path": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\workflows\\json_filter_active_csv.yaml",
+    "status_type": "stable",
+    "steps": [
+      "io.read_json_file",
+      "transform.json_items_to_rows",
+      "data.filter_rows_contains",
+      "io.save_csv"
+    ],
+    "generated_from": null,
+    "inserted_steps": [],
+    "output_path": "examples/outputs/tasks_active.csv"
+  },
+  {
+    "workflow_id": "json_pick_fields_csv",
+    "name": "JSON Pick Fields CSV",
+    "workflow_path": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\workflows\\json_pick_fields_csv.yaml",
+    "status_type": "stable",
+    "steps": [
+      "io.read_json_file",
+      "transform.json_items_to_rows",
+      "data.pick_fields",
+      "io.save_csv"
+    ],
+    "generated_from": null,
+    "inserted_steps": [],
+    "output_path": "examples/outputs/tasks_picked.csv"
+  },
+  {
+    "workflow_id": "json_sort_by_priority_csv",
+    "name": "JSON Sort By Priority CSV",
+    "workflow_path": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\workflows\\json_sort_by_priority_csv.yaml",
+    "status_type": "stable",
+    "steps": [
+      "io.read_json_file",
+      "transform.json_items_to_rows",
+      "data.sort_rows",
+      "io.save_csv"
+    ],
+    "generated_from": null,
+    "inserted_steps": [],
+    "output_path": "examples/outputs/tasks_sorted.csv"
+  },
+  {
+    "workflow_id": "json_to_csv_export",
+    "name": "JSON To CSV Export",
+    "workflow_path": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\workflows\\json_to_csv_export.yaml",
+    "status_type": "stable",
+    "steps": [
+      "io.read_json_file",
+      "transform.json_items_to_rows",
+      "io.save_csv"
+    ],
+    "generated_from": null,
+    "inserted_steps": [],
+    "output_path": "examples/outputs/tasks_all.csv"
+  },
+  {
+    "workflow_id": "note_frequency_report",
+    "name": "Note Frequency Report",
+    "workflow_path": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\workflows\\note_frequency_report.yaml",
+    "status_type": "stable",
+    "steps": [
+      "io.read_markdown_file",
+      "text.clean_text_basic",
+      "analysis.count_frequency",
+      "io.write_markdown"
+    ],
+    "generated_from": null,
+    "inserted_steps": [],
+    "output_path": "examples/outputs/frequency.md"
+  },
+  {
+    "workflow_id": "note_full_report",
+    "name": "Note Full Report",
+    "workflow_path": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\workflows\\note_full_report.yaml",
+    "status_type": "stable",
+    "steps": [
+      "io.read_markdown_file",
+      "text.clean_text_basic",
+      "text.extract_markdown_headings",
+      "text.simple_summary",
+      "text.extract_keywords_basic",
+      "analysis.count_frequency",
+      "analysis.count_text_stats",
+      "io.write_markdown"
+    ],
+    "generated_from": null,
+    "inserted_steps": [],
+    "output_path": "examples/outputs/full_report.md"
+  },
+  {
+    "workflow_id": "note_health_report",
+    "name": "Note Health Report",
+    "workflow_path": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\workflows\\note_health_report.yaml",
+    "status_type": "stable",
+    "steps": [
+      "io.read_markdown_file",
+      "text.clean_text_basic",
+      "text.extract_markdown_headings",
+      "analysis.count_text_stats",
+      "io.write_markdown"
+    ],
+    "generated_from": null,
+    "inserted_steps": [],
+    "output_path": "examples/outputs/health.md"
+  },
+  {
+    "workflow_id": "note_keywords_report",
+    "name": "Note Keywords Report",
+    "workflow_path": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\workflows\\note_keywords_report.yaml",
+    "status_type": "stable",
+    "steps": [
+      "io.read_markdown_file",
+      "text.clean_text_basic",
+      "text.extract_keywords_basic",
+      "io.write_markdown"
+    ],
+    "generated_from": null,
+    "inserted_steps": [],
+    "output_path": "examples/outputs/keywords.md"
+  },
+  {
+    "workflow_id": "note_outline_export",
+    "name": "Note Outline Export",
+    "workflow_path": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\workflows\\note_outline_export.yaml",
+    "status_type": "stable",
+    "steps": [
+      "io.read_markdown_file",
+      "text.extract_markdown_headings",
+      "transform.headings_to_rows",
+      "io.write_markdown"
+    ],
+    "generated_from": null,
+    "inserted_steps": [],
+    "output_path": "examples/outputs/outline.md"
+  },
+  {
+    "workflow_id": "note_to_summary",
+    "name": "Note To Summary",
+    "workflow_path": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\workflows\\note_to_summary.yaml",
+    "status_type": "stable",
+    "steps": [
+      "io.read_markdown_file",
+      "text.clean_text_basic",
+      "text.simple_summary",
+      "io.write_markdown"
+    ],
+    "generated_from": null,
+    "inserted_steps": [],
+    "output_path": "examples/outputs/summary.md"
+  }
+]

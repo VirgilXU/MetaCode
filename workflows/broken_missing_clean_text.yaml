@@ -1,0 +1,8 @@
+id: broken_missing_clean_text
+name: Broken Missing Clean Text
+inputs:
+  file_path: examples/sample_note.md
+  output_path: examples/outputs/broken.md
+steps:
+  - io.read_markdown_file
+  - text.simple_summary

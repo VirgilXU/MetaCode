@@ -1,0 +1,14 @@
+id: note_full_report
+name: Note Full Report
+inputs:
+  file_path: examples/sample_note.md
+  output_path: examples/outputs/full_report.md
+steps:
+  - io.read_markdown_file
+  - text.clean_text_basic
+  - text.extract_markdown_headings
+  - text.simple_summary
+  - text.extract_keywords_basic
+  - analysis.count_frequency
+  - analysis.count_text_stats
+  - io.write_markdown

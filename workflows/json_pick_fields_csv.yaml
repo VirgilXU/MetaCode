@@ -1,0 +1,14 @@
+id: json_pick_fields_csv
+name: JSON Pick Fields CSV
+inputs:
+  file_path: examples/sample_tasks.json
+  output_path: examples/outputs/tasks_picked.csv
+  fields:
+    - id
+    - title
+    - status
+steps:
+  - io.read_json_file
+  - transform.json_items_to_rows
+  - data.pick_fields
+  - io.save_csv

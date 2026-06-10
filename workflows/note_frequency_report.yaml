@@ -1,0 +1,10 @@
+id: note_frequency_report
+name: Note Frequency Report
+inputs:
+  file_path: examples/sample_note.md
+  output_path: examples/outputs/frequency.md
+steps:
+  - io.read_markdown_file
+  - text.clean_text_basic
+  - analysis.count_frequency
+  - io.write_markdown

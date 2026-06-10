@@ -1,0 +1,26 @@
+id: io.save_csv
+name: Save CSV
+version: 0.1.0
+language: python
+category: io
+purpose: Save data.rows as a CSV file.
+use_cases:
+  - Export tabular workflow output
+not_for:
+  - Nested object serialization
+context_read:
+  - data.rows
+  - inputs.output_path
+context_write:
+  - artifacts.output_file
+dependencies: []
+constraints:
+  - data.rows must be a list of dictionaries
+side_effects:
+  - Writes a local file
+failure_modes:
+  - data.rows missing
+  - inputs.output_path missing
+runner: runner.py
+tests:
+  - tests/test_stage2_unittest.py

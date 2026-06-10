@@ -1,0 +1,12 @@
+id: json_filter_active_csv
+name: JSON Filter Active CSV
+inputs:
+  file_path: examples/sample_tasks.json
+  output_path: examples/outputs/tasks_active.csv
+  filter_field: status
+  filter_value: active
+steps:
+  - io.read_json_file
+  - transform.json_items_to_rows
+  - data.filter_rows_contains
+  - io.save_csv
