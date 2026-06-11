@@ -17,6 +17,7 @@ EXPORT_FILES = {
     "stages": "stages.json",
     "workflows": "workflow_graph.json",
     "repairs": "repair_metrics.json",
+    "repairEvents": "repair_events.json",
     "reuse": "reuse_summary.json",
     "graph": "capability_graph.json",
     "graphSummary": "capability_graph_summary.json",
@@ -43,7 +44,7 @@ def load_monitoring_bundle(root: Path) -> dict[str, Any]:
     bundle["diagnostics"] = diagnostics
     bundle["api"] = {
         "mode": "api",
-        "version": "stage12",
+        "version": "stage13",
         "endpoints": [
             "/api/status",
             "/api/monitoring",
@@ -54,6 +55,11 @@ def load_monitoring_bundle(root: Path) -> dict[str, Any]:
             "/api/repairs/by-strategy",
             "/api/repairs/by-workflow",
             "/api/repairs/recent",
+            "/api/repair-events/summary",
+            "/api/repair-events",
+            "/api/repair-events/by-strategy",
+            "/api/repair-events/by-workflow",
+            "/api/repair-events/recent",
             "/api/stages",
             "/api/reuse-summary",
             "/api/capability-graph",
@@ -252,7 +258,7 @@ def api_response(root: Path, method: str, path: str, query: dict[str, list[str]]
         return HTTPStatus.OK, {
             "status": "ok",
             "service": "MetaCode Observatory API",
-            "version": "stage12",
+            "version": "stage13",
             "current_stage": summary.get("current_stage"),
             "last_exported_at": summary.get("last_exported_at"),
             "summary": summary,
@@ -283,6 +289,23 @@ def api_response(root: Path, method: str, path: str, query: dict[str, list[str]]
 
     if method == "GET" and path == "/api/repairs/recent":
         return HTTPStatus.OK, load_export(root, "repairs")["recent_attempts"]
+
+    if method == "GET" and path == "/api/repair-events/summary":
+        return HTTPStatus.OK, load_export(root, "repairEvents")["summary"]
+
+    if method == "GET" and path == "/api/repair-events":
+        limit = to_int(first_param(query, "limit"), default=100)
+        events = load_export(root, "repairEvents")["events"]
+        return HTTPStatus.OK, list(reversed(events))[:limit]
+
+    if method == "GET" and path == "/api/repair-events/by-strategy":
+        return HTTPStatus.OK, load_export(root, "repairEvents")["by_strategy"]
+
+    if method == "GET" and path == "/api/repair-events/by-workflow":
+        return HTTPStatus.OK, load_export(root, "repairEvents")["by_workflow"]
+
+    if method == "GET" and path == "/api/repair-events/recent":
+        return HTTPStatus.OK, load_export(root, "repairEvents")["recent_events"]
 
     if method == "GET" and path == "/api/stages":
         return HTTPStatus.OK, load_export(root, "stages")

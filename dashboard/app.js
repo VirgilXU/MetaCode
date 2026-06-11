@@ -9,6 +9,7 @@ const files = {
   stages: "stages.json",
   workflows: "workflow_graph.json",
   repairs: "repair_metrics.json",
+  repairEvents: "repair_events.json",
   reuse: "reuse_summary.json",
   graph: "capability_graph.json",
   graphSummary: "capability_graph_summary.json",
@@ -99,6 +100,7 @@ async function loadFromApi() {
     stages: payload.stages,
     workflows: payload.workflows,
     repairs: payload.repairs || buildRepairMetrics(payload.runs || [], payload.workflows || []),
+    repairEvents: payload.repairEvents || buildRepairEvents(payload.runs || [], payload.workflows || []),
     reuse: payload.reuse,
     graph: payload.graph,
     graphSummary: payload.graphSummary,
@@ -116,9 +118,10 @@ async function loadFromStaticExports() {
     ...data,
     diagnostics: buildDiagnostics(data.failures || []),
     repairs: data.repairs || buildRepairMetrics(data.runs || [], data.workflows || []),
+    repairEvents: data.repairEvents || buildRepairEvents(data.runs || [], data.workflows || []),
     api: {
       mode: "static-fallback",
-      version: "stage12-compatible",
+      version: "stage13-compatible",
       endpoints: Object.values(files).map((file) => `${STATIC_EXPORT_BASE}/${file}`),
     },
   };
@@ -269,6 +272,152 @@ function buildRepairMetrics(runs, workflows) {
     by_strategy: byStrategyRows,
     by_workflow: byWorkflowRows,
     recent_attempts: recentAttempts.slice(-8).reverse(),
+  };
+}
+
+function compactSuggestion(suggestion) {
+  return {
+    metacode_id: suggestion.metacode_id,
+    name: suggestion.name,
+    category: suggestion.category,
+    provides: suggestion.provides || [],
+    requires: suggestion.requires || [],
+    unmet_inputs: suggestion.unmet_inputs || [],
+    ready: Boolean(suggestion.ready),
+    score: suggestion.score,
+  };
+}
+
+function compactFailure(run) {
+  if (!run) return null;
+  return {
+    run_id: run.run_id,
+    workflow_id: run.workflow_id,
+    workflow_path: run.workflow_path,
+    status: run.status,
+    ended_at: run.ended_at,
+    failed_step: run.failed_step,
+    reason: run.reason,
+    missing_fields: run.missing_fields || [],
+    suggestions: (run.suggestions || []).map(compactSuggestion),
+  };
+}
+
+function eventLatencyMs(start, end) {
+  if (!start || !end) return null;
+  const startTime = new Date(start).getTime();
+  const endTime = new Date(end).getTime();
+  if (Number.isNaN(startTime) || Number.isNaN(endTime)) return null;
+  return Number((endTime - startTime).toFixed(3));
+}
+
+function buildEventRollup(events, key, idKey) {
+  const rows = {};
+  events.forEach((event) => {
+    const rowId = event[key];
+    const row = rows[rowId] || {
+      id: rowId,
+      [idKey]: rowId,
+      event_count: 0,
+      closed_success_count: 0,
+      closed_failed_count: 0,
+      linked_failure_count: 0,
+      latest_event_id: "",
+      latest_status: "",
+    };
+    row.event_count += 1;
+    if (event.event_status === "closed_success") row.closed_success_count += 1;
+    if (event.event_status === "closed_failed") row.closed_failed_count += 1;
+    if (event.failure_link_status === "linked") row.linked_failure_count += 1;
+    row.latest_event_id = event.repair_id;
+    row.latest_status = event.event_status;
+    rows[rowId] = row;
+  });
+  return Object.values(rows)
+    .map((row) => ({
+      ...row,
+      success_rate: percent(row.closed_success_count, row.event_count),
+      failure_link_rate: percent(row.linked_failure_count, row.event_count),
+    }))
+    .sort((left, right) => {
+      const countDelta = (right.event_count || 0) - (left.event_count || 0);
+      if (countDelta !== 0) return countDelta;
+      return String(left[idKey]).localeCompare(String(right[idKey]));
+    });
+}
+
+function buildRepairEvents(runs, workflows) {
+  const workflowById = Object.fromEntries((workflows || []).map((workflow) => [workflow.workflow_id, workflow]));
+  const latestFailureByWorkflow = {};
+  const events = [];
+
+  (runs || []).forEach((run) => {
+    const workflowId = run.workflow_id || "";
+    if (run.status === "failed") {
+      latestFailureByWorkflow[workflowId] = run;
+      return;
+    }
+
+    const workflow = workflowById[workflowId] || {};
+    const strategy = inferRepairStrategy(workflowId, workflow);
+    if (!strategy) return;
+
+    const sourceWorkflowId = inferRepairSource(workflowId, strategy, workflow);
+    const failure = latestFailureByWorkflow[sourceWorkflowId] || null;
+    const suggestions = (failure?.suggestions || []).map(compactSuggestion);
+    const suggestedMetacodes = suggestions.map((suggestion) => suggestion.metacode_id).filter(Boolean);
+    const insertedSteps = workflow.inserted_steps?.length ? workflow.inserted_steps : suggestedMetacodes;
+    const eventStatus = run.status === "success" ? "closed_success" : "closed_failed";
+
+    events.push({
+      repair_id: `repair-${run.run_id}`,
+      event_status: eventStatus,
+      failure_link_status: failure ? "linked" : "unlinked",
+      source_workflow_id: sourceWorkflowId,
+      failure_run_id: failure?.run_id || null,
+      failure_ended_at: failure?.ended_at || null,
+      failed_step: failure?.failed_step || null,
+      missing_fields: failure?.missing_fields || [],
+      suggestions,
+      suggested_metacodes: suggestedMetacodes,
+      ready_suggestion_count: suggestions.filter((suggestion) => suggestion.ready).length,
+      strategy,
+      generated_workflow_id: workflowId,
+      generated_workflow_path: workflow.workflow_path || run.workflow_path,
+      inserted_steps: insertedSteps,
+      verification_run_id: run.run_id,
+      verification_status: run.status || "unknown",
+      verification_ended_at: run.ended_at,
+      verification_duration_ms: run.duration_ms || 0,
+      event_latency_ms: eventLatencyMs(failure?.ended_at, run.ended_at),
+      failure: compactFailure(failure),
+    });
+  });
+
+  const closedSuccessCount = events.filter((event) => event.event_status === "closed_success").length;
+  const linkedEventCount = events.filter((event) => event.failure_link_status === "linked").length;
+  const byStrategy = buildEventRollup(events, "strategy", "strategy");
+  const byWorkflow = buildEventRollup(events, "source_workflow_id", "source_workflow_id");
+
+  return {
+    summary: {
+      status: "computed",
+      event_count: events.length,
+      closed_success_count: closedSuccessCount,
+      closed_failed_count: events.length - closedSuccessCount,
+      event_success_rate: percent(closedSuccessCount, events.length),
+      linked_event_count: linkedEventCount,
+      unlinked_event_count: events.length - linkedEventCount,
+      failure_link_rate: percent(linkedEventCount, events.length),
+      strategy_count: byStrategy.length,
+      source_workflow_count: byWorkflow.length,
+      generated_workflow_count: new Set(events.map((event) => event.generated_workflow_id)).size,
+      latest_event: events[events.length - 1] || null,
+    },
+    events,
+    recent_events: events.slice(-8).reverse(),
+    by_strategy: byStrategy,
+    by_workflow: byWorkflow,
   };
 }
 
@@ -425,9 +574,9 @@ function isAutoRefreshEnabled() {
 
 function setHealth(summary) {
   const pill = document.querySelector("#healthPill");
-  const healthy = summary.unresolved_field_count === 0 && summary.current_stage >= 12;
+  const healthy = summary.unresolved_field_count === 0 && summary.current_stage >= 13;
   const source = state.dataSource === "api" ? "API" : "Static";
-  pill.textContent = healthy ? `Stage 12 ${source}` : "Needs Review";
+  pill.textContent = healthy ? `Stage 13 ${source}` : "Needs Review";
   pill.className = `status-pill ${healthy ? "ok" : "warn"}`;
 }
 
@@ -440,7 +589,7 @@ function renderMetrics(summary) {
     ["稳定 Workflow", summary.stable_workflow_count, "复用基线"],
     ["能力图谱边", summary.edge_count, `${summary.field_count} 个字段`],
     ["修复成功率", `${summary.repair_success_rate ?? 0}%`, `${formatNumber(summary.repair_attempt_count ?? 0)} 次验证`],
-    ["未解析字段", summary.unresolved_field_count, "字段完整性检查"],
+    ["修复事件链", summary.repair_event_count ?? 0, `${summary.repair_event_link_rate ?? 0}% 失败绑定率`],
   ];
 
   document.querySelector("#metricGrid").innerHTML = metrics
@@ -490,8 +639,8 @@ function renderStageGates(summary) {
     {
       label: "阶段报告",
       value: `${summary.stage_report_count ?? 0} 份`,
-      ok: summary.current_stage >= 12,
-      note: "第十二阶段报告进入监控范围",
+      ok: summary.current_stage >= 13,
+      note: "第十三阶段报告进入监控范围",
     },
     {
       label: "字段完整性",
@@ -731,6 +880,111 @@ function renderRepairs() {
       </div>
       <div class="diagnostic-row-meta">Source: ${escapeHtml(attempt.source_workflow_id)} / ${escapeHtml(strategyLabel(attempt.strategy))}</div>
       <div class="diagnostic-row-meta">${escapeHtml(formatTime(attempt.ended_at))} / ${escapeHtml(formatMs(attempt.duration_ms))}</div>
+    </div>
+  `);
+}
+
+function eventStatusLabel(status) {
+  return {
+    closed_success: "闭环成功",
+    closed_failed: "闭环失败",
+  }[status] || status;
+}
+
+function renderRepairEventMetrics() {
+  const repairEvents = state.data.repairEvents || buildRepairEvents(state.data.runs || [], state.data.workflows || []);
+  const summary = repairEvents.summary || {};
+  const latest = summary.latest_event;
+  const metrics = [
+    ["事件链", summary.event_count, "failure -> repair -> verification"],
+    ["失败绑定率", `${summary.failure_link_rate ?? 0}%`, `${formatNumber(summary.linked_event_count || 0)} 条已绑定`],
+    ["闭环成功率", `${summary.event_success_rate ?? 0}%`, `${formatNumber(summary.closed_success_count || 0)} 条成功`],
+    ["生成路径", summary.generated_workflow_count, `${summary.strategy_count || 0} 类修复策略`],
+  ];
+
+  document.querySelector("#repairEventMetricGrid").innerHTML = metrics
+    .map(
+      ([label, value, note]) => `
+        <article class="metric-card">
+          <div class="metric-label">${escapeHtml(label)}</div>
+          <div class="metric-value">${typeof value === "number" ? formatNumber(value) : escapeHtml(value)}</div>
+          <div class="metric-note">${escapeHtml(note)}</div>
+        </article>
+      `,
+    )
+    .join("");
+
+  document.querySelector("#repairEventLatest").innerHTML = latest
+    ? `
+      <div class="event-chain">
+        <div>
+          <span class="small-label">Failure</span>
+          <strong>${escapeHtml(latest.source_workflow_id)}</strong>
+          <code>${escapeHtml(latest.failure_run_id || "-")}</code>
+        </div>
+        <div>
+          <span class="small-label">Suggestion</span>
+          <strong>${escapeHtml((latest.suggested_metacodes || []).join(", ") || "-")}</strong>
+          <code>${escapeHtml((latest.missing_fields || []).join(", ") || "-")}</code>
+        </div>
+        <div>
+          <span class="small-label">Generated</span>
+          <strong>${escapeHtml(latest.generated_workflow_id)}</strong>
+          <code>${escapeHtml((latest.inserted_steps || []).join(" -> ") || "-")}</code>
+        </div>
+        <div>
+          <span class="small-label">Verification</span>
+          <strong>${escapeHtml(eventStatusLabel(latest.event_status))}</strong>
+          <code>${escapeHtml(formatMs(latest.event_latency_ms))}</code>
+        </div>
+      </div>
+    `
+    : `<div class="empty-state">暂无修复事件链</div>`;
+}
+
+function renderRepairEventList(selector, rows, renderer) {
+  const target = document.querySelector(selector);
+  if (!rows?.length) {
+    target.innerHTML = `<div class="empty-state">暂无事件链数据</div>`;
+    return;
+  }
+  target.innerHTML = rows.slice(0, 6).map(renderer).join("");
+}
+
+function renderRepairEvents() {
+  const repairEvents = state.data.repairEvents || buildRepairEvents(state.data.runs || [], state.data.workflows || []);
+  renderRepairEventMetrics();
+
+  renderRepairEventList("#repairEventWorkflowList", repairEvents.by_workflow, (row) => `
+    <div class="event-row">
+      <div class="diagnostic-row-head">
+        <div class="diagnostic-row-title">${escapeHtml(row.source_workflow_id)}</div>
+        <span class="tag green">${formatNumber(row.event_count)}</span>
+      </div>
+      <div class="diagnostic-row-meta">Success: ${row.success_rate}% / Link: ${row.failure_link_rate}%</div>
+      <div class="diagnostic-row-meta">Latest: ${escapeHtml(row.latest_event_id || "-")} / ${escapeHtml(eventStatusLabel(row.latest_status))}</div>
+    </div>
+  `);
+
+  renderRepairEventList("#repairEventStrategyList", repairEvents.by_strategy, (row) => `
+    <div class="event-row">
+      <div class="diagnostic-row-head">
+        <div class="diagnostic-row-title">${escapeHtml(strategyLabel(row.strategy))}</div>
+        <span class="tag green">${row.success_rate}%</span>
+      </div>
+      <div class="diagnostic-row-meta">Events: ${formatNumber(row.event_count)} / Linked: ${formatNumber(row.linked_failure_count)}</div>
+      <div class="diagnostic-row-meta">Latest: ${escapeHtml(row.latest_event_id || "-")}</div>
+    </div>
+  `);
+
+  renderRepairEventList("#repairEventRecentList", repairEvents.recent_events, (event) => `
+    <div class="event-row">
+      <div class="diagnostic-row-head">
+        <div class="diagnostic-row-title">${escapeHtml(event.source_workflow_id)}</div>
+        <span class="tag ${event.event_status === "closed_success" ? "green" : "red"}">${escapeHtml(eventStatusLabel(event.event_status))}</span>
+      </div>
+      <div class="diagnostic-row-meta">Failure: ${escapeHtml(event.failure_run_id || "-")}</div>
+      <div class="diagnostic-row-meta">Generated: ${escapeHtml(event.generated_workflow_id)} / ${escapeHtml(strategyLabel(event.strategy))}</div>
     </div>
   `);
 }
@@ -987,6 +1241,7 @@ function renderAll() {
   renderApiStatus();
   renderDiagnostics();
   renderRepairs();
+  renderRepairEvents();
   renderStages();
   renderWorkflows();
   renderFailures();

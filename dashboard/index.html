@@ -22,6 +22,7 @@
           <a href="#api" class="nav-link">实时 API</a>
           <a href="#diagnostics" class="nav-link">诊断工作台</a>
           <a href="#repairs" class="nav-link">修复闭环</a>
+          <a href="#repair-events" class="nav-link">事件链</a>
           <a href="#stages" class="nav-link">阶段</a>
           <a href="#workflows" class="nav-link">Workflow</a>
           <a href="#failures" class="nav-link">失败诊断</a>
@@ -159,6 +160,44 @@
               </div>
               <div id="repairLatest" class="detail-block"></div>
               <div class="repair-list compact" id="repairRecentList"></div>
+            </article>
+          </div>
+        </section>
+
+        <section id="repair-events" class="section">
+          <div class="section-heading">
+            <h2>修复事件链</h2>
+            <span class="muted">绑定失败记录、推荐能力、生成路径和验证运行。</span>
+          </div>
+          <div class="event-metrics" id="repairEventMetricGrid"></div>
+          <article class="panel">
+            <div class="panel-head">
+              <h3>最新事件链</h3>
+              <span class="small-label">failure / suggestion / generated / verification</span>
+            </div>
+            <div id="repairEventLatest" class="detail-block"></div>
+          </article>
+          <div class="event-layout">
+            <article class="panel">
+              <div class="panel-head">
+                <h3>Workflow 事件</h3>
+                <span class="small-label">source workflow</span>
+              </div>
+              <div class="event-list" id="repairEventWorkflowList"></div>
+            </article>
+            <article class="panel">
+              <div class="panel-head">
+                <h3>策略事件</h3>
+                <span class="small-label">strategy</span>
+              </div>
+              <div class="event-list" id="repairEventStrategyList"></div>
+            </article>
+            <article class="panel">
+              <div class="panel-head">
+                <h3>最近事件</h3>
+                <span class="small-label">recent</span>
+              </div>
+              <div class="event-list" id="repairEventRecentList"></div>
             </article>
           </div>
         </section>

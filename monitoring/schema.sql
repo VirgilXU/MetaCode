@@ -37,6 +37,27 @@ CREATE TABLE IF NOT EXISTS stages (
   updated_at TEXT
 );
 
+CREATE TABLE IF NOT EXISTS repair_events (
+  repair_id TEXT PRIMARY KEY,
+  event_status TEXT NOT NULL,
+  failure_link_status TEXT NOT NULL,
+  source_workflow_id TEXT NOT NULL,
+  failure_run_id TEXT,
+  failure_ended_at TEXT,
+  failed_step TEXT,
+  missing_fields_json TEXT,
+  suggestions_json TEXT,
+  strategy TEXT NOT NULL,
+  generated_workflow_id TEXT NOT NULL,
+  generated_workflow_path TEXT,
+  inserted_steps_json TEXT,
+  verification_run_id TEXT,
+  verification_status TEXT,
+  verification_ended_at TEXT,
+  verification_duration_ms REAL,
+  event_latency_ms REAL
+);
+
 CREATE TABLE IF NOT EXISTS metacodes (
   metacode_id TEXT PRIMARY KEY,
   category TEXT,

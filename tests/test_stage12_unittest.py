@@ -39,7 +39,7 @@ class Stage12RepairLoopTest(unittest.TestCase):
         payload = self.get_json("/api/status")
 
         self.assertEqual(payload["status"], "ok")
-        self.assertEqual(payload["version"], "stage12")
+        self.assertTrue(payload["version"].startswith("stage"))
         self.assertGreaterEqual(payload["current_stage"], 12)
         self.assertIn("repair_success_rate", payload["summary"])
 

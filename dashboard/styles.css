@@ -427,6 +427,14 @@ h3 {
   max-width: 100%;
 }
 
+.event-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  min-width: 0;
+  max-width: 100%;
+}
+
 .diagnostic-layout {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -436,6 +444,14 @@ h3 {
 }
 
 .repair-layout {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.event-layout {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 14px;
@@ -459,6 +475,12 @@ h3 {
   margin-top: 14px;
 }
 
+.event-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+}
+
 .diagnostic-row {
   display: grid;
   gap: 7px;
@@ -475,6 +497,42 @@ h3 {
   border: 1px solid var(--line);
   border-radius: 8px;
   background: #fbfcfd;
+}
+
+.event-row {
+  display: grid;
+  gap: 7px;
+  padding: 11px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfcfd;
+}
+
+.event-chain {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.event-chain > div {
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfcfd;
+  padding: 12px;
+  display: grid;
+  gap: 7px;
+}
+
+.event-chain strong,
+.event-chain code {
+  overflow-wrap: anywhere;
+}
+
+.event-chain code {
+  color: var(--blue);
+  font-family: "Cascadia Mono", Consolas, monospace;
+  font-size: 11px;
 }
 
 .diagnostic-row-head {
@@ -735,6 +793,7 @@ tbody tr.selected {
   .failure-grid,
   .diagnostic-metrics,
   .repair-metrics,
+  .event-metrics,
   .comparison-grid,
   .extension-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -744,8 +803,13 @@ tbody tr.selected {
   .workflow-layout,
   .diagnostic-layout,
   .repair-layout,
+  .event-layout,
   .graph-layout {
     grid-template-columns: 1fr;
+  }
+
+  .event-chain {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .timeline,
@@ -779,12 +843,17 @@ tbody tr.selected {
   .failure-grid,
   .diagnostic-metrics,
   .repair-metrics,
+  .event-metrics,
   .comparison-grid,
   .extension-grid,
   .timeline,
   .gate-grid,
   .api-grid,
   .report-list {
+    grid-template-columns: 1fr;
+  }
+
+  .event-chain {
     grid-template-columns: 1fr;
   }
 

@@ -158,6 +158,23 @@ def rate(success_count: int, attempt_count: int) -> float:
     return round((success_count / attempt_count) * 100, 1) if attempt_count else 0.0
 
 
+def parse_time(value: str | None) -> datetime | None:
+    if not value:
+        return None
+    try:
+        return datetime.fromisoformat(value)
+    except ValueError:
+        return None
+
+
+def elapsed_ms(start: str | None, end: str | None) -> float | None:
+    start_time = parse_time(start)
+    end_time = parse_time(end)
+    if not start_time or not end_time:
+        return None
+    return round((end_time - start_time).total_seconds() * 1000, 3)
+
+
 def build_repair_metrics(runs: list[dict[str, Any]], workflows: list[dict[str, Any]]) -> dict[str, Any]:
     workflow_by_id = {workflow["workflow_id"]: workflow for workflow in workflows}
     by_strategy: dict[str, dict[str, Any]] = {}
@@ -269,6 +286,145 @@ def build_repair_metrics(runs: list[dict[str, Any]], workflows: list[dict[str, A
     }
 
 
+def compact_suggestion(suggestion: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "metacode_id": suggestion.get("metacode_id"),
+        "name": suggestion.get("name"),
+        "category": suggestion.get("category"),
+        "provides": suggestion.get("provides", []),
+        "requires": suggestion.get("requires", []),
+        "unmet_inputs": suggestion.get("unmet_inputs", []),
+        "ready": bool(suggestion.get("ready")),
+        "score": suggestion.get("score"),
+    }
+
+
+def compact_failure(run: dict[str, Any] | None) -> dict[str, Any] | None:
+    if not run:
+        return None
+    return {
+        "run_id": run.get("run_id"),
+        "workflow_id": run.get("workflow_id"),
+        "workflow_path": run.get("workflow_path"),
+        "status": run.get("status"),
+        "ended_at": run.get("ended_at"),
+        "failed_step": run.get("failed_step"),
+        "reason": run.get("reason"),
+        "missing_fields": run.get("missing_fields", []),
+        "suggestions": [compact_suggestion(suggestion) for suggestion in run.get("suggestions", [])],
+    }
+
+
+def build_event_rollup(events: list[dict[str, Any]], key: str, id_key: str) -> list[dict[str, Any]]:
+    rows: dict[str, dict[str, Any]] = {}
+    for event in events:
+        row_id = event[key]
+        row = rows.setdefault(
+            row_id,
+            {
+                "id": row_id,
+                id_key: row_id,
+                "event_count": 0,
+                "closed_success_count": 0,
+                "closed_failed_count": 0,
+                "linked_failure_count": 0,
+                "latest_event_id": "",
+                "latest_status": "",
+            },
+        )
+        row["event_count"] += 1
+        if event["event_status"] == "closed_success":
+            row["closed_success_count"] += 1
+        if event["event_status"] == "closed_failed":
+            row["closed_failed_count"] += 1
+        if event["failure_link_status"] == "linked":
+            row["linked_failure_count"] += 1
+        row["latest_event_id"] = event["repair_id"]
+        row["latest_status"] = event["event_status"]
+
+    for row in rows.values():
+        row["success_rate"] = rate(row["closed_success_count"], row["event_count"])
+        row["failure_link_rate"] = rate(row["linked_failure_count"], row["event_count"])
+    return sorted(rows.values(), key=lambda row: (-row["event_count"], row[id_key]))
+
+
+def build_repair_events(runs: list[dict[str, Any]], workflows: list[dict[str, Any]]) -> dict[str, Any]:
+    workflow_by_id = {workflow["workflow_id"]: workflow for workflow in workflows}
+    latest_failure_by_workflow: dict[str, dict[str, Any]] = {}
+    events: list[dict[str, Any]] = []
+
+    for run in runs:
+        workflow_id = run.get("workflow_id", "")
+        if run.get("status") == "failed":
+            latest_failure_by_workflow[workflow_id] = run
+            continue
+
+        workflow = workflow_by_id.get(workflow_id)
+        strategy = infer_repair_strategy(workflow_id, workflow)
+        if not strategy:
+            continue
+
+        source_workflow_id = infer_repair_source(workflow_id, strategy, workflow)
+        failure = latest_failure_by_workflow.get(source_workflow_id)
+        suggestions = [compact_suggestion(suggestion) for suggestion in (failure or {}).get("suggestions", [])]
+        suggested_metacodes = [suggestion["metacode_id"] for suggestion in suggestions if suggestion.get("metacode_id")]
+        inserted_steps = list((workflow or {}).get("inserted_steps") or suggested_metacodes)
+        verification_status = run.get("status", "unknown")
+        event_status = "closed_success" if verification_status == "success" else "closed_failed"
+
+        events.append(
+            {
+                "repair_id": f"repair-{run.get('run_id')}",
+                "event_status": event_status,
+                "failure_link_status": "linked" if failure else "unlinked",
+                "source_workflow_id": source_workflow_id,
+                "failure_run_id": failure.get("run_id") if failure else None,
+                "failure_ended_at": failure.get("ended_at") if failure else None,
+                "failed_step": failure.get("failed_step") if failure else None,
+                "missing_fields": failure.get("missing_fields", []) if failure else [],
+                "suggestions": suggestions,
+                "suggested_metacodes": suggested_metacodes,
+                "ready_suggestion_count": len([suggestion for suggestion in suggestions if suggestion.get("ready")]),
+                "strategy": strategy,
+                "generated_workflow_id": workflow_id,
+                "generated_workflow_path": (workflow or {}).get("workflow_path") or run.get("workflow_path"),
+                "inserted_steps": inserted_steps,
+                "verification_run_id": run.get("run_id"),
+                "verification_status": verification_status,
+                "verification_ended_at": run.get("ended_at"),
+                "verification_duration_ms": run.get("duration_ms", 0),
+                "event_latency_ms": elapsed_ms(failure.get("ended_at") if failure else None, run.get("ended_at")),
+                "failure": compact_failure(failure),
+            }
+        )
+
+    closed_success_count = len([event for event in events if event["event_status"] == "closed_success"])
+    linked_event_count = len([event for event in events if event["failure_link_status"] == "linked"])
+    event_count = len(events)
+    by_strategy = build_event_rollup(events, "strategy", "strategy")
+    by_workflow = build_event_rollup(events, "source_workflow_id", "source_workflow_id")
+    return {
+        "summary": {
+            "status": "computed",
+            "event_count": event_count,
+            "closed_success_count": closed_success_count,
+            "closed_failed_count": event_count - closed_success_count,
+            "event_success_rate": rate(closed_success_count, event_count),
+            "linked_event_count": linked_event_count,
+            "unlinked_event_count": event_count - linked_event_count,
+            "failure_link_rate": rate(linked_event_count, event_count),
+            "strategy_count": len(by_strategy),
+            "source_workflow_count": len(by_workflow),
+            "generated_workflow_count": len({event["generated_workflow_id"] for event in events}),
+            "latest_event": events[-1] if events else None,
+        },
+        "events": events,
+        "recent_events": list(reversed(events[-8:])),
+        "by_strategy": by_strategy,
+        "by_workflow": by_workflow,
+    }
+
+
 def dashboard_summary(
     reuse_summary: dict[str, Any],
     graph_summary: dict[str, Any],
@@ -320,7 +476,7 @@ def write_sqlite_database(root: Path, payload: dict[str, Any]) -> Path:
     conn = sqlite3.connect(db_path)
     try:
         conn.executescript(schema_path.read_text(encoding="utf-8"))
-        for table in ("runs", "workflows", "stages", "metacodes", "graph_edges", "summaries"):
+        for table in ("runs", "workflows", "stages", "repair_events", "metacodes", "graph_edges", "summaries"):
             conn.execute(f"DELETE FROM {table}")
 
         for run in payload["runs"]:
@@ -376,6 +532,33 @@ def write_sqlite_database(root: Path, payload: dict[str, Any]) -> Path:
                 ),
             )
 
+        for event in payload["repair_events"]["events"]:
+            conn.execute(
+                """
+                INSERT INTO repair_events VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    event["repair_id"],
+                    event["event_status"],
+                    event["failure_link_status"],
+                    event["source_workflow_id"],
+                    event.get("failure_run_id"),
+                    event.get("failure_ended_at"),
+                    event.get("failed_step"),
+                    json.dumps(event.get("missing_fields", []), ensure_ascii=False),
+                    json.dumps(event.get("suggestions", []), ensure_ascii=False),
+                    event["strategy"],
+                    event["generated_workflow_id"],
+                    event.get("generated_workflow_path"),
+                    json.dumps(event.get("inserted_steps", []), ensure_ascii=False),
+                    event.get("verification_run_id"),
+                    event.get("verification_status"),
+                    event.get("verification_ended_at"),
+                    event.get("verification_duration_ms"),
+                    event.get("event_latency_ms"),
+                ),
+            )
+
         graph = payload["capability_graph"]
         for metacode_id, node in graph["nodes"].items():
             conn.execute(
@@ -408,7 +591,13 @@ def write_sqlite_database(root: Path, payload: dict[str, Any]) -> Path:
                 ),
             )
 
-        for key in ("dashboard_summary", "repair_metrics", "reuse_summary", "capability_graph_summary"):
+        for key in (
+            "dashboard_summary",
+            "repair_metrics",
+            "repair_events",
+            "reuse_summary",
+            "capability_graph_summary",
+        ):
             conn.execute(
                 "INSERT INTO summaries VALUES (?, ?)",
                 (key, json.dumps(payload[key], ensure_ascii=False)),
@@ -434,10 +623,13 @@ def export_monitoring_data(root: Path) -> dict[str, Any]:
     stages = collect_stage_reports(root)
     workflows = collect_workflows(root)
     repair_metrics = build_repair_metrics(runs, workflows)
+    repair_events = build_repair_events(runs, workflows)
     summary = dashboard_summary(reuse_summary, graph_summary, runs, stages, workflows)
     summary["repair_attempt_count"] = repair_metrics["summary"]["attempt_count"]
     summary["repair_success_count"] = repair_metrics["summary"]["success_count"]
     summary["repair_success_rate"] = repair_metrics["summary"]["repair_success_rate"]
+    summary["repair_event_count"] = repair_events["summary"]["event_count"]
+    summary["repair_event_link_rate"] = repair_events["summary"]["failure_link_rate"]
 
     payload = {
         "dashboard_summary": summary,
@@ -446,6 +638,7 @@ def export_monitoring_data(root: Path) -> dict[str, Any]:
         "stages": stages,
         "workflows": workflows,
         "repair_metrics": repair_metrics,
+        "repair_events": repair_events,
         "reuse_summary": reuse_summary,
         "capability_graph": graph,
         "capability_graph_summary": graph_summary,
@@ -457,6 +650,7 @@ def export_monitoring_data(root: Path) -> dict[str, Any]:
     write_json(exports_dir / "stages.json", stages)
     write_json(exports_dir / "workflow_graph.json", workflows)
     write_json(exports_dir / "repair_metrics.json", repair_metrics)
+    write_json(exports_dir / "repair_events.json", repair_events)
     write_json(exports_dir / "reuse_summary.json", reuse_summary)
     write_json(exports_dir / "capability_graph.json", graph)
     write_json(exports_dir / "capability_graph_summary.json", graph_summary)
