@@ -135,6 +135,140 @@ def collect_workflows(root: Path) -> list[dict[str, Any]]:
     return workflows
 
 
+def infer_repair_strategy(workflow_id: str, workflow: dict[str, Any] | None = None) -> str | None:
+    status_type = (workflow or {}).get("status_type")
+    if status_type == "generated_fixed" or workflow_id.endswith("_fixed"):
+        return "fixed"
+    if status_type == "generated_planned" or workflow_id.endswith("_planned"):
+        return "planned"
+    return None
+
+
+def infer_repair_source(workflow_id: str, strategy: str, workflow: dict[str, Any] | None = None) -> str:
+    generated_from = (workflow or {}).get("generated_from")
+    if generated_from:
+        return generated_from
+    suffix = f"_{strategy}"
+    if workflow_id.endswith(suffix):
+        return workflow_id[: -len(suffix)]
+    return workflow_id
+
+
+def rate(success_count: int, attempt_count: int) -> float:
+    return round((success_count / attempt_count) * 100, 1) if attempt_count else 0.0
+
+
+def build_repair_metrics(runs: list[dict[str, Any]], workflows: list[dict[str, Any]]) -> dict[str, Any]:
+    workflow_by_id = {workflow["workflow_id"]: workflow for workflow in workflows}
+    by_strategy: dict[str, dict[str, Any]] = {}
+    by_workflow: dict[str, dict[str, Any]] = {}
+    recent_attempts: list[dict[str, Any]] = []
+
+    for run in runs:
+        workflow_id = run.get("workflow_id", "")
+        workflow = workflow_by_id.get(workflow_id)
+        strategy = infer_repair_strategy(workflow_id, workflow)
+        if not strategy:
+            continue
+
+        source_workflow_id = infer_repair_source(workflow_id, strategy, workflow)
+        success = run.get("status") == "success"
+        status_key = "success_count" if success else "failed_count"
+
+        strategy_row = by_strategy.setdefault(
+            strategy,
+            {
+                "id": strategy,
+                "strategy": strategy,
+                "attempt_count": 0,
+                "success_count": 0,
+                "failed_count": 0,
+                "repair_workflows": {},
+                "source_workflows": {},
+                "latest_status": "",
+            },
+        )
+        strategy_row["attempt_count"] += 1
+        strategy_row[status_key] += 1
+        strategy_row["repair_workflows"][workflow_id] = strategy_row["repair_workflows"].get(workflow_id, 0) + 1
+        strategy_row["source_workflows"][source_workflow_id] = (
+            strategy_row["source_workflows"].get(source_workflow_id, 0) + 1
+        )
+        strategy_row["latest_status"] = run.get("status", "unknown")
+
+        workflow_row = by_workflow.setdefault(
+            source_workflow_id,
+            {
+                "id": source_workflow_id,
+                "source_workflow_id": source_workflow_id,
+                "attempt_count": 0,
+                "success_count": 0,
+                "failed_count": 0,
+                "strategies": {},
+                "repair_workflows": {},
+                "latest_repair_workflow_id": "",
+                "latest_status": "",
+            },
+        )
+        workflow_row["attempt_count"] += 1
+        workflow_row[status_key] += 1
+        workflow_row["strategies"][strategy] = workflow_row["strategies"].get(strategy, 0) + 1
+        workflow_row["repair_workflows"][workflow_id] = workflow_row["repair_workflows"].get(workflow_id, 0) + 1
+        workflow_row["latest_repair_workflow_id"] = workflow_id
+        workflow_row["latest_status"] = run.get("status", "unknown")
+
+        recent_attempts.append(
+            {
+                "run_id": run.get("run_id"),
+                "workflow_id": workflow_id,
+                "source_workflow_id": source_workflow_id,
+                "strategy": strategy,
+                "status": run.get("status", "unknown"),
+                "ended_at": run.get("ended_at"),
+                "duration_ms": run.get("duration_ms", 0),
+            }
+        )
+
+    for row in by_strategy.values():
+        row["success_rate"] = rate(row["success_count"], row["attempt_count"])
+        row["repair_workflow_count"] = len(row["repair_workflows"])
+        row["source_workflow_count"] = len(row["source_workflows"])
+
+    for row in by_workflow.values():
+        row["success_rate"] = rate(row["success_count"], row["attempt_count"])
+        row["repair_workflow_count"] = len(row["repair_workflows"])
+
+    strategy_rows = sorted(by_strategy.values(), key=lambda row: (-row["attempt_count"], row["strategy"]))
+    workflow_rows = sorted(by_workflow.values(), key=lambda row: (-row["attempt_count"], row["source_workflow_id"]))
+    attempt_count = sum(row["attempt_count"] for row in strategy_rows)
+    success_count = sum(row["success_count"] for row in strategy_rows)
+    failed_count = attempt_count - success_count
+    fixed_row = by_strategy.get("fixed", {})
+    planned_row = by_strategy.get("planned", {})
+
+    return {
+        "summary": {
+            "status": "computed",
+            "attempt_count": attempt_count,
+            "success_count": success_count,
+            "failed_count": failed_count,
+            "repair_success_rate": rate(success_count, attempt_count),
+            "fixed_attempt_count": fixed_row.get("attempt_count", 0),
+            "fixed_success_count": fixed_row.get("success_count", 0),
+            "fixed_success_rate": rate(fixed_row.get("success_count", 0), fixed_row.get("attempt_count", 0)),
+            "planned_attempt_count": planned_row.get("attempt_count", 0),
+            "planned_success_count": planned_row.get("success_count", 0),
+            "planned_success_rate": rate(planned_row.get("success_count", 0), planned_row.get("attempt_count", 0)),
+            "source_workflow_count": len(workflow_rows),
+            "repair_workflow_count": len({attempt["workflow_id"] for attempt in recent_attempts}),
+            "latest_attempt": recent_attempts[-1] if recent_attempts else None,
+        },
+        "by_strategy": strategy_rows,
+        "by_workflow": workflow_rows,
+        "recent_attempts": list(reversed(recent_attempts[-8:])),
+    }
+
+
 def dashboard_summary(
     reuse_summary: dict[str, Any],
     graph_summary: dict[str, Any],
@@ -274,7 +408,7 @@ def write_sqlite_database(root: Path, payload: dict[str, Any]) -> Path:
                 ),
             )
 
-        for key in ("dashboard_summary", "reuse_summary", "capability_graph_summary"):
+        for key in ("dashboard_summary", "repair_metrics", "reuse_summary", "capability_graph_summary"):
             conn.execute(
                 "INSERT INTO summaries VALUES (?, ?)",
                 (key, json.dumps(payload[key], ensure_ascii=False)),
@@ -299,7 +433,11 @@ def export_monitoring_data(root: Path) -> dict[str, Any]:
     failures = [run for run in runs if run["status"] == "failed"]
     stages = collect_stage_reports(root)
     workflows = collect_workflows(root)
+    repair_metrics = build_repair_metrics(runs, workflows)
     summary = dashboard_summary(reuse_summary, graph_summary, runs, stages, workflows)
+    summary["repair_attempt_count"] = repair_metrics["summary"]["attempt_count"]
+    summary["repair_success_count"] = repair_metrics["summary"]["success_count"]
+    summary["repair_success_rate"] = repair_metrics["summary"]["repair_success_rate"]
 
     payload = {
         "dashboard_summary": summary,
@@ -307,6 +445,7 @@ def export_monitoring_data(root: Path) -> dict[str, Any]:
         "failures": failures,
         "stages": stages,
         "workflows": workflows,
+        "repair_metrics": repair_metrics,
         "reuse_summary": reuse_summary,
         "capability_graph": graph,
         "capability_graph_summary": graph_summary,
@@ -317,6 +456,7 @@ def export_monitoring_data(root: Path) -> dict[str, Any]:
     write_json(exports_dir / "failures.json", failures)
     write_json(exports_dir / "stages.json", stages)
     write_json(exports_dir / "workflow_graph.json", workflows)
+    write_json(exports_dir / "repair_metrics.json", repair_metrics)
     write_json(exports_dir / "reuse_summary.json", reuse_summary)
     write_json(exports_dir / "capability_graph.json", graph)
     write_json(exports_dir / "capability_graph_summary.json", graph_summary)

@@ -39,7 +39,7 @@ class Stage11DiagnosticsWorkbenchTest(unittest.TestCase):
         payload = self.get_json("/api/status")
 
         self.assertEqual(payload["status"], "ok")
-        self.assertEqual(payload["version"], "stage11")
+        self.assertTrue(payload["version"].startswith("stage"))
         self.assertGreaterEqual(payload["current_stage"], 11)
 
     def test_monitoring_bundle_contains_diagnostics(self):

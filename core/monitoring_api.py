@@ -16,6 +16,7 @@ EXPORT_FILES = {
     "failures": "failures.json",
     "stages": "stages.json",
     "workflows": "workflow_graph.json",
+    "repairs": "repair_metrics.json",
     "reuse": "reuse_summary.json",
     "graph": "capability_graph.json",
     "graphSummary": "capability_graph_summary.json",
@@ -38,17 +39,21 @@ def load_export(root: Path, key: str) -> Any:
 
 def load_monitoring_bundle(root: Path) -> dict[str, Any]:
     bundle = {key: load_export(root, key) for key in EXPORT_FILES}
-    diagnostics = build_diagnostics(bundle["failures"])
+    diagnostics = with_repair_summary(build_diagnostics(bundle["failures"]), bundle["repairs"])
     bundle["diagnostics"] = diagnostics
     bundle["api"] = {
         "mode": "api",
-        "version": "stage11",
+        "version": "stage12",
         "endpoints": [
             "/api/status",
             "/api/monitoring",
             "/api/runs",
             "/api/failures",
             "/api/workflows",
+            "/api/repairs/summary",
+            "/api/repairs/by-strategy",
+            "/api/repairs/by-workflow",
+            "/api/repairs/recent",
             "/api/stages",
             "/api/reuse-summary",
             "/api/capability-graph",
@@ -101,6 +106,15 @@ def filter_workflows(workflows: list[dict[str, Any]], query: dict[str, list[str]
 
 def sorted_rows(counter: dict[str, dict[str, Any]], count_key: str = "failure_count") -> list[dict[str, Any]]:
     return sorted(counter.values(), key=lambda row: (-row[count_key], str(row.get("id") or row.get("field") or "")))
+
+
+def with_repair_summary(diagnostics: dict[str, Any], repairs: dict[str, Any]) -> dict[str, Any]:
+    repair_summary = repairs.get("summary", {})
+    diagnostics["summary"]["repair_success_rate"] = repair_summary.get("repair_success_rate")
+    diagnostics["summary"]["repair_success_rate_status"] = repair_summary.get("status", "computed")
+    diagnostics["summary"]["repair_attempt_count"] = repair_summary.get("attempt_count", 0)
+    diagnostics["summary"]["repair_success_count"] = repair_summary.get("success_count", 0)
+    return diagnostics
 
 
 def build_diagnostics(failures: list[dict[str, Any]]) -> dict[str, Any]:
@@ -238,7 +252,7 @@ def api_response(root: Path, method: str, path: str, query: dict[str, list[str]]
         return HTTPStatus.OK, {
             "status": "ok",
             "service": "MetaCode Observatory API",
-            "version": "stage11",
+            "version": "stage12",
             "current_stage": summary.get("current_stage"),
             "last_exported_at": summary.get("last_exported_at"),
             "summary": summary,
@@ -258,6 +272,18 @@ def api_response(root: Path, method: str, path: str, query: dict[str, list[str]]
     if method == "GET" and path == "/api/workflows":
         return HTTPStatus.OK, filter_workflows(load_export(root, "workflows"), query)
 
+    if method == "GET" and path == "/api/repairs/summary":
+        return HTTPStatus.OK, load_export(root, "repairs")["summary"]
+
+    if method == "GET" and path == "/api/repairs/by-strategy":
+        return HTTPStatus.OK, load_export(root, "repairs")["by_strategy"]
+
+    if method == "GET" and path == "/api/repairs/by-workflow":
+        return HTTPStatus.OK, load_export(root, "repairs")["by_workflow"]
+
+    if method == "GET" and path == "/api/repairs/recent":
+        return HTTPStatus.OK, load_export(root, "repairs")["recent_attempts"]
+
     if method == "GET" and path == "/api/stages":
         return HTTPStatus.OK, load_export(root, "stages")
 
@@ -274,7 +300,8 @@ def api_response(root: Path, method: str, path: str, query: dict[str, list[str]]
         return HTTPStatus.OK, report_rows(root)
 
     if method == "GET" and path == "/api/diagnostics/summary":
-        return HTTPStatus.OK, build_diagnostics(load_export(root, "failures"))["summary"]
+        diagnostics = with_repair_summary(build_diagnostics(load_export(root, "failures")), load_export(root, "repairs"))
+        return HTTPStatus.OK, diagnostics["summary"]
 
     if method == "GET" and path == "/api/diagnostics/by-field":
         return HTTPStatus.OK, build_diagnostics(load_export(root, "failures"))["by_field"]

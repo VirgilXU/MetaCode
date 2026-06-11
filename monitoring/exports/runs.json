@@ -16095,5 +16095,963 @@
     },
     "context_keys": [],
     "source_log": "run_log"
+  },
+  {
+    "run_id": "814900d1-3dc6-4437-81eb-90a7e83eeac5",
+    "workflow_id": "broken_missing_clean_text",
+    "workflow_path": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\workflows\\broken_missing_clean_text.yaml",
+    "status": "failed",
+    "started_at": "2026-06-11T12:38:01.275795+00:00",
+    "ended_at": "2026-06-11T12:38:01.307517+00:00",
+    "duration_ms": 31.274,
+    "steps": [
+      "io.read_markdown_file"
+    ],
+    "steps_total": 2,
+    "steps_success": 1,
+    "failed_step": "text.simple_summary",
+    "reason": "text.simple_summary missing context field(s): data.clean_text. available: data.raw_text, errors, inputs.file_path, inputs.output_path, logs. suggestions: text.clean_text_basic provides data.clean_text (ready)",
+    "missing_fields": [
+      "data.clean_text"
+    ],
+    "suggestions": [
+      {
+        "metacode_id": "text.clean_text_basic",
+        "name": "Clean Text Basic",
+        "category": "text",
+        "provides": [
+          "data.clean_text"
+        ],
+        "requires": [
+          "data.raw_text"
+        ],
+        "unmet_inputs": [],
+        "ready": true,
+        "score": 10
+      }
+    ],
+    "outputs": {},
+    "context_keys": [
+      "data.raw_text",
+      "errors",
+      "inputs.file_path",
+      "inputs.output_path",
+      "logs"
+    ],
+    "source_log": "failure_log"
+  },
+  {
+    "run_id": "d9b96fc2-8066-42f6-84ce-8c350267b226",
+    "workflow_id": "note_health_report",
+    "workflow_path": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\workflows\\note_health_report.yaml",
+    "status": "success",
+    "started_at": "2026-06-11T12:38:01.307517+00:00",
+    "ended_at": "2026-06-11T12:38:01.346832+00:00",
+    "duration_ms": 37.986,
+    "steps": [
+      "io.read_markdown_file",
+      "text.clean_text_basic",
+      "text.extract_markdown_headings",
+      "analysis.count_text_stats",
+      "io.write_markdown"
+    ],
+    "steps_total": 5,
+    "steps_success": 5,
+    "failed_step": null,
+    "reason": null,
+    "missing_fields": [],
+    "suggestions": [],
+    "outputs": {
+      "output_file": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\examples\\outputs\\health.md"
+    },
+    "context_keys": [],
+    "source_log": "run_log"
+  },
+  {
+    "run_id": "84c30015-dc85-4ab6-90d5-82a06ddb82ad",
+    "workflow_id": "note_to_summary",
+    "workflow_path": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\workflows\\note_to_summary.yaml",
+    "status": "success",
+    "started_at": "2026-06-11T12:38:01.346832+00:00",
+    "ended_at": "2026-06-11T12:38:01.380940+00:00",
+    "duration_ms": 33.841,
+    "steps": [
+      "io.read_markdown_file",
+      "text.clean_text_basic",
+      "text.simple_summary",
+      "io.write_markdown"
+    ],
+    "steps_total": 4,
+    "steps_success": 4,
+    "failed_step": null,
+    "reason": null,
+    "missing_fields": [],
+    "suggestions": [],
+    "outputs": {
+      "output_file": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\examples\\outputs\\summary.md"
+    },
+    "context_keys": [],
+    "source_log": "run_log"
+  },
+  {
+    "run_id": "72aab003-54be-4807-a98e-0185cf860394",
+    "workflow_id": "json_filter_active_csv",
+    "workflow_path": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\workflows\\json_filter_active_csv.yaml",
+    "status": "success",
+    "started_at": "2026-06-11T12:38:06.659978+00:00",
+    "ended_at": "2026-06-11T12:38:06.762825+00:00",
+    "duration_ms": 103.62,
+    "steps": [
+      "io.read_json_file",
+      "transform.json_items_to_rows",
+      "data.filter_rows_contains",
+      "io.save_csv"
+    ],
+    "steps_total": 4,
+    "steps_success": 4,
+    "failed_step": null,
+    "reason": null,
+    "missing_fields": [],
+    "suggestions": [],
+    "outputs": {
+      "output_file": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\examples\\outputs\\tasks_active.csv"
+    },
+    "context_keys": [],
+    "source_log": "run_log"
+  },
+  {
+    "run_id": "99823689-489c-4831-9e99-436c960d9b75",
+    "workflow_id": "json_pick_fields_csv",
+    "workflow_path": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\workflows\\json_pick_fields_csv.yaml",
+    "status": "success",
+    "started_at": "2026-06-11T12:38:06.766780+00:00",
+    "ended_at": "2026-06-11T12:38:06.825832+00:00",
+    "duration_ms": 58.543,
+    "steps": [
+      "io.read_json_file",
+      "transform.json_items_to_rows",
+      "data.pick_fields",
+      "io.save_csv"
+    ],
+    "steps_total": 4,
+    "steps_success": 4,
+    "failed_step": null,
+    "reason": null,
+    "missing_fields": [],
+    "suggestions": [],
+    "outputs": {
+      "output_file": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\examples\\outputs\\tasks_picked.csv"
+    },
+    "context_keys": [],
+    "source_log": "run_log"
+  },
+  {
+    "run_id": "53d9335b-6f37-41fa-9d72-14be5cd5681e",
+    "workflow_id": "json_sort_by_priority_csv",
+    "workflow_path": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\workflows\\json_sort_by_priority_csv.yaml",
+    "status": "success",
+    "started_at": "2026-06-11T12:38:06.825832+00:00",
+    "ended_at": "2026-06-11T12:38:06.877361+00:00",
+    "duration_ms": 51.728,
+    "steps": [
+      "io.read_json_file",
+      "transform.json_items_to_rows",
+      "data.sort_rows",
+      "io.save_csv"
+    ],
+    "steps_total": 4,
+    "steps_success": 4,
+    "failed_step": null,
+    "reason": null,
+    "missing_fields": [],
+    "suggestions": [],
+    "outputs": {
+      "output_file": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\examples\\outputs\\tasks_sorted.csv"
+    },
+    "context_keys": [],
+    "source_log": "run_log"
+  },
+  {
+    "run_id": "6948d162-2fd8-4657-8c02-da6dffb4032f",
+    "workflow_id": "json_to_csv_export",
+    "workflow_path": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\workflows\\json_to_csv_export.yaml",
+    "status": "success",
+    "started_at": "2026-06-11T12:38:06.878879+00:00",
+    "ended_at": "2026-06-11T12:38:06.931433+00:00",
+    "duration_ms": 52.087,
+    "steps": [
+      "io.read_json_file",
+      "transform.json_items_to_rows",
+      "io.save_csv"
+    ],
+    "steps_total": 3,
+    "steps_success": 3,
+    "failed_step": null,
+    "reason": null,
+    "missing_fields": [],
+    "suggestions": [],
+    "outputs": {
+      "output_file": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\examples\\outputs\\tasks_all.csv"
+    },
+    "context_keys": [],
+    "source_log": "run_log"
+  },
+  {
+    "run_id": "6516e33e-0a54-4df2-8b03-0230228b2214",
+    "workflow_id": "note_frequency_report",
+    "workflow_path": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\workflows\\note_frequency_report.yaml",
+    "status": "success",
+    "started_at": "2026-06-11T12:38:06.931433+00:00",
+    "ended_at": "2026-06-11T12:38:06.982601+00:00",
+    "duration_ms": 50.746,
+    "steps": [
+      "io.read_markdown_file",
+      "text.clean_text_basic",
+      "analysis.count_frequency",
+      "io.write_markdown"
+    ],
+    "steps_total": 4,
+    "steps_success": 4,
+    "failed_step": null,
+    "reason": null,
+    "missing_fields": [],
+    "suggestions": [],
+    "outputs": {
+      "output_file": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\examples\\outputs\\frequency.md"
+    },
+    "context_keys": [],
+    "source_log": "run_log"
+  },
+  {
+    "run_id": "ad4ebf7d-8001-4cc9-b406-d5bd29bc3db1",
+    "workflow_id": "note_full_report",
+    "workflow_path": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\workflows\\note_full_report.yaml",
+    "status": "success",
+    "started_at": "2026-06-11T12:38:06.984394+00:00",
+    "ended_at": "2026-06-11T12:38:07.030595+00:00",
+    "duration_ms": 45.148,
+    "steps": [
+      "io.read_markdown_file",
+      "text.clean_text_basic",
+      "text.extract_markdown_headings",
+      "text.simple_summary",
+      "text.extract_keywords_basic",
+      "analysis.count_frequency",
+      "analysis.count_text_stats",
+      "io.write_markdown"
+    ],
+    "steps_total": 8,
+    "steps_success": 8,
+    "failed_step": null,
+    "reason": null,
+    "missing_fields": [],
+    "suggestions": [],
+    "outputs": {
+      "output_file": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\examples\\outputs\\full_report.md"
+    },
+    "context_keys": [],
+    "source_log": "run_log"
+  },
+  {
+    "run_id": "9b1d2d2a-46a5-40e0-b32e-cccf746c1772",
+    "workflow_id": "note_health_report",
+    "workflow_path": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\workflows\\note_health_report.yaml",
+    "status": "success",
+    "started_at": "2026-06-11T12:38:07.030595+00:00",
+    "ended_at": "2026-06-11T12:38:07.064628+00:00",
+    "duration_ms": 33.418,
+    "steps": [
+      "io.read_markdown_file",
+      "text.clean_text_basic",
+      "text.extract_markdown_headings",
+      "analysis.count_text_stats",
+      "io.write_markdown"
+    ],
+    "steps_total": 5,
+    "steps_success": 5,
+    "failed_step": null,
+    "reason": null,
+    "missing_fields": [],
+    "suggestions": [],
+    "outputs": {
+      "output_file": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\examples\\outputs\\health.md"
+    },
+    "context_keys": [],
+    "source_log": "run_log"
+  },
+  {
+    "run_id": "7744984f-c199-4e23-908b-35438a5b6064",
+    "workflow_id": "note_keywords_report",
+    "workflow_path": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\workflows\\note_keywords_report.yaml",
+    "status": "success",
+    "started_at": "2026-06-11T12:38:07.065168+00:00",
+    "ended_at": "2026-06-11T12:38:07.095950+00:00",
+    "duration_ms": 30.274,
+    "steps": [
+      "io.read_markdown_file",
+      "text.clean_text_basic",
+      "text.extract_keywords_basic",
+      "io.write_markdown"
+    ],
+    "steps_total": 4,
+    "steps_success": 4,
+    "failed_step": null,
+    "reason": null,
+    "missing_fields": [],
+    "suggestions": [],
+    "outputs": {
+      "output_file": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\examples\\outputs\\keywords.md"
+    },
+    "context_keys": [],
+    "source_log": "run_log"
+  },
+  {
+    "run_id": "2a9168d8-9473-41bf-85ee-e0158c824217",
+    "workflow_id": "note_outline_export",
+    "workflow_path": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\workflows\\note_outline_export.yaml",
+    "status": "success",
+    "started_at": "2026-06-11T12:38:07.097474+00:00",
+    "ended_at": "2026-06-11T12:38:07.142822+00:00",
+    "duration_ms": 44.91,
+    "steps": [
+      "io.read_markdown_file",
+      "text.extract_markdown_headings",
+      "transform.headings_to_rows",
+      "io.write_markdown"
+    ],
+    "steps_total": 4,
+    "steps_success": 4,
+    "failed_step": null,
+    "reason": null,
+    "missing_fields": [],
+    "suggestions": [],
+    "outputs": {
+      "output_file": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\examples\\outputs\\outline.md"
+    },
+    "context_keys": [],
+    "source_log": "run_log"
+  },
+  {
+    "run_id": "db48d879-0b01-41b9-aef0-243da80f55ab",
+    "workflow_id": "note_to_summary",
+    "workflow_path": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\workflows\\note_to_summary.yaml",
+    "status": "success",
+    "started_at": "2026-06-11T12:38:07.142822+00:00",
+    "ended_at": "2026-06-11T12:38:07.179441+00:00",
+    "duration_ms": 35.499,
+    "steps": [
+      "io.read_markdown_file",
+      "text.clean_text_basic",
+      "text.simple_summary",
+      "io.write_markdown"
+    ],
+    "steps_total": 4,
+    "steps_success": 4,
+    "failed_step": null,
+    "reason": null,
+    "missing_fields": [],
+    "suggestions": [],
+    "outputs": {
+      "output_file": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\examples\\outputs\\summary.md"
+    },
+    "context_keys": [],
+    "source_log": "run_log"
+  },
+  {
+    "run_id": "c30a5bba-5283-482a-9707-445f100357bd",
+    "workflow_id": "broken_missing_clean_text",
+    "workflow_path": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\workflows\\broken_missing_clean_text.yaml",
+    "status": "failed",
+    "started_at": "2026-06-11T12:38:07.179441+00:00",
+    "ended_at": "2026-06-11T12:38:07.217999+00:00",
+    "duration_ms": 37.77,
+    "steps": [
+      "io.read_markdown_file"
+    ],
+    "steps_total": 2,
+    "steps_success": 1,
+    "failed_step": "text.simple_summary",
+    "reason": "text.simple_summary missing context field(s): data.clean_text. available: data.raw_text, errors, inputs.file_path, inputs.output_path, logs. suggestions: text.clean_text_basic provides data.clean_text (ready)",
+    "missing_fields": [
+      "data.clean_text"
+    ],
+    "suggestions": [
+      {
+        "metacode_id": "text.clean_text_basic",
+        "name": "Clean Text Basic",
+        "category": "text",
+        "provides": [
+          "data.clean_text"
+        ],
+        "requires": [
+          "data.raw_text"
+        ],
+        "unmet_inputs": [],
+        "ready": true,
+        "score": 10
+      }
+    ],
+    "outputs": {},
+    "context_keys": [
+      "data.raw_text",
+      "errors",
+      "inputs.file_path",
+      "inputs.output_path",
+      "logs"
+    ],
+    "source_log": "failure_log"
+  },
+  {
+    "run_id": "6ba3f8b7-4a97-4457-bf46-5ba4ccefc2b1",
+    "workflow_id": "broken_missing_clean_text",
+    "workflow_path": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\workflows\\broken_missing_clean_text.yaml",
+    "status": "failed",
+    "started_at": "2026-06-11T12:38:07.337238+00:00",
+    "ended_at": "2026-06-11T12:38:07.385430+00:00",
+    "duration_ms": 48.398,
+    "steps": [
+      "io.read_markdown_file"
+    ],
+    "steps_total": 2,
+    "steps_success": 1,
+    "failed_step": "text.simple_summary",
+    "reason": "text.simple_summary missing context field(s): data.clean_text. available: data.raw_text, errors, inputs.file_path, inputs.output_path, logs. suggestions: text.clean_text_basic provides data.clean_text (ready)",
+    "missing_fields": [
+      "data.clean_text"
+    ],
+    "suggestions": [
+      {
+        "metacode_id": "text.clean_text_basic",
+        "name": "Clean Text Basic",
+        "category": "text",
+        "provides": [
+          "data.clean_text"
+        ],
+        "requires": [
+          "data.raw_text"
+        ],
+        "unmet_inputs": [],
+        "ready": true,
+        "score": 10
+      }
+    ],
+    "outputs": {},
+    "context_keys": [
+      "data.raw_text",
+      "errors",
+      "inputs.file_path",
+      "inputs.output_path",
+      "logs"
+    ],
+    "source_log": "failure_log"
+  },
+  {
+    "run_id": "0ed8e95d-1d13-4a7b-8102-e7bc60e6a8d8",
+    "workflow_id": "broken_missing_clean_text",
+    "workflow_path": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\workflows\\broken_missing_clean_text.yaml",
+    "status": "failed",
+    "started_at": "2026-06-11T12:38:07.502524+00:00",
+    "ended_at": "2026-06-11T12:38:07.567100+00:00",
+    "duration_ms": 63.272,
+    "steps": [
+      "io.read_markdown_file"
+    ],
+    "steps_total": 2,
+    "steps_success": 1,
+    "failed_step": "text.simple_summary",
+    "reason": "text.simple_summary missing context field(s): data.clean_text. available: data.raw_text, errors, inputs.file_path, inputs.output_path, logs. suggestions: text.clean_text_basic provides data.clean_text (ready)",
+    "missing_fields": [
+      "data.clean_text"
+    ],
+    "suggestions": [
+      {
+        "metacode_id": "text.clean_text_basic",
+        "name": "Clean Text Basic",
+        "category": "text",
+        "provides": [
+          "data.clean_text"
+        ],
+        "requires": [
+          "data.raw_text"
+        ],
+        "unmet_inputs": [],
+        "ready": true,
+        "score": 10
+      }
+    ],
+    "outputs": {},
+    "context_keys": [
+      "data.raw_text",
+      "errors",
+      "inputs.file_path",
+      "inputs.output_path",
+      "logs"
+    ],
+    "source_log": "failure_log"
+  },
+  {
+    "run_id": "229a6a27-d157-43de-897b-ac45057902ee",
+    "workflow_id": "broken_missing_clean_text_fixed",
+    "workflow_path": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\workflows\\generated\\broken_missing_clean_text.fixed.yaml",
+    "status": "success",
+    "started_at": "2026-06-11T12:38:07.574053+00:00",
+    "ended_at": "2026-06-11T12:38:07.666123+00:00",
+    "duration_ms": 91.182,
+    "steps": [
+      "io.read_markdown_file",
+      "text.clean_text_basic",
+      "text.simple_summary"
+    ],
+    "steps_total": 3,
+    "steps_success": 3,
+    "failed_step": null,
+    "reason": null,
+    "missing_fields": [],
+    "suggestions": [],
+    "outputs": {},
+    "context_keys": [],
+    "source_log": "run_log"
+  },
+  {
+    "run_id": "8c92976a-a1b2-4045-85f3-1ed4d262628c",
+    "workflow_id": "broken_missing_clean_text",
+    "workflow_path": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\workflows\\broken_missing_clean_text.yaml",
+    "status": "failed",
+    "started_at": "2026-06-11T12:38:07.670861+00:00",
+    "ended_at": "2026-06-11T12:38:07.727417+00:00",
+    "duration_ms": 57.354,
+    "steps": [
+      "io.read_markdown_file"
+    ],
+    "steps_total": 2,
+    "steps_success": 1,
+    "failed_step": "text.simple_summary",
+    "reason": "text.simple_summary missing context field(s): data.clean_text. available: data.raw_text, errors, inputs.file_path, inputs.output_path, logs. suggestions: text.clean_text_basic provides data.clean_text (ready)",
+    "missing_fields": [
+      "data.clean_text"
+    ],
+    "suggestions": [
+      {
+        "metacode_id": "text.clean_text_basic",
+        "name": "Clean Text Basic",
+        "category": "text",
+        "provides": [
+          "data.clean_text"
+        ],
+        "requires": [
+          "data.raw_text"
+        ],
+        "unmet_inputs": [],
+        "ready": true,
+        "score": 10
+      }
+    ],
+    "outputs": {},
+    "context_keys": [
+      "data.raw_text",
+      "errors",
+      "inputs.file_path",
+      "inputs.output_path",
+      "logs"
+    ],
+    "source_log": "failure_log"
+  },
+  {
+    "run_id": "9853ee20-0f54-462e-9708-77680749aa9b",
+    "workflow_id": "broken_missing_clean_text_fixed",
+    "workflow_path": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\workflows\\generated\\broken_missing_clean_text.fixed.yaml",
+    "status": "success",
+    "started_at": "2026-06-11T12:38:07.737148+00:00",
+    "ended_at": "2026-06-11T12:38:07.811526+00:00",
+    "duration_ms": 74.408,
+    "steps": [
+      "io.read_markdown_file",
+      "text.clean_text_basic",
+      "text.simple_summary"
+    ],
+    "steps_total": 3,
+    "steps_success": 3,
+    "failed_step": null,
+    "reason": null,
+    "missing_fields": [],
+    "suggestions": [],
+    "outputs": {},
+    "context_keys": [],
+    "source_log": "run_log"
+  },
+  {
+    "run_id": "bcf4cc43-e4f5-440b-bdba-3ef2141f2533",
+    "workflow_id": "broken_missing_clean_text",
+    "workflow_path": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\workflows\\broken_missing_clean_text.yaml",
+    "status": "failed",
+    "started_at": "2026-06-11T12:38:07.818815+00:00",
+    "ended_at": "2026-06-11T12:38:07.892297+00:00",
+    "duration_ms": 72.284,
+    "steps": [
+      "io.read_markdown_file"
+    ],
+    "steps_total": 2,
+    "steps_success": 1,
+    "failed_step": "text.simple_summary",
+    "reason": "text.simple_summary missing context field(s): data.clean_text. available: data.raw_text, errors, inputs.file_path, inputs.output_path, logs. suggestions: text.clean_text_basic provides data.clean_text (ready)",
+    "missing_fields": [
+      "data.clean_text"
+    ],
+    "suggestions": [
+      {
+        "metacode_id": "text.clean_text_basic",
+        "name": "Clean Text Basic",
+        "category": "text",
+        "provides": [
+          "data.clean_text"
+        ],
+        "requires": [
+          "data.raw_text"
+        ],
+        "unmet_inputs": [],
+        "ready": true,
+        "score": 10
+      }
+    ],
+    "outputs": {},
+    "context_keys": [
+      "data.raw_text",
+      "errors",
+      "inputs.file_path",
+      "inputs.output_path",
+      "logs"
+    ],
+    "source_log": "failure_log"
+  },
+  {
+    "run_id": "6aa4b1a9-4fb0-4fdc-acb4-86de0a0ec5df",
+    "workflow_id": "broken_missing_clean_text_fixed",
+    "workflow_path": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\workflows\\generated\\broken_missing_clean_text.fixed.yaml",
+    "status": "success",
+    "started_at": "2026-06-11T12:38:07.899144+00:00",
+    "ended_at": "2026-06-11T12:38:07.992722+00:00",
+    "duration_ms": 94.125,
+    "steps": [
+      "io.read_markdown_file",
+      "text.clean_text_basic",
+      "text.simple_summary"
+    ],
+    "steps_total": 3,
+    "steps_success": 3,
+    "failed_step": null,
+    "reason": null,
+    "missing_fields": [],
+    "suggestions": [],
+    "outputs": {},
+    "context_keys": [],
+    "source_log": "run_log"
+  },
+  {
+    "run_id": "a6166a82-9d78-4205-aaea-8cc61ec5eaf1",
+    "workflow_id": "broken_missing_clean_text_fixed",
+    "workflow_path": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\workflows\\generated\\broken_missing_clean_text.fixed.yaml",
+    "status": "success",
+    "started_at": "2026-06-11T12:38:07.996148+00:00",
+    "ended_at": "2026-06-11T12:38:08.071391+00:00",
+    "duration_ms": 75.003,
+    "steps": [
+      "io.read_markdown_file",
+      "text.clean_text_basic",
+      "text.simple_summary"
+    ],
+    "steps_total": 3,
+    "steps_success": 3,
+    "failed_step": null,
+    "reason": null,
+    "missing_fields": [],
+    "suggestions": [],
+    "outputs": {},
+    "context_keys": [],
+    "source_log": "run_log"
+  },
+  {
+    "run_id": "c80595df-62ff-44f3-ab74-14e2478ce8a1",
+    "workflow_id": "note_to_summary",
+    "workflow_path": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\workflows\\note_to_summary.yaml",
+    "status": "success",
+    "started_at": "2026-06-11T12:38:08.074453+00:00",
+    "ended_at": "2026-06-11T12:38:08.147504+00:00",
+    "duration_ms": 73.405,
+    "steps": [
+      "io.read_markdown_file",
+      "text.clean_text_basic",
+      "text.simple_summary",
+      "io.write_markdown"
+    ],
+    "steps_total": 4,
+    "steps_success": 4,
+    "failed_step": null,
+    "reason": null,
+    "missing_fields": [],
+    "suggestions": [],
+    "outputs": {
+      "output_file": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\examples\\outputs\\summary.md"
+    },
+    "context_keys": [],
+    "source_log": "run_log"
+  },
+  {
+    "run_id": "010bae4e-afd3-42a6-b0ff-b862d9722da2",
+    "workflow_id": "broken_missing_summary_chain",
+    "workflow_path": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\workflows\\broken_missing_summary_chain.yaml",
+    "status": "failed",
+    "started_at": "2026-06-11T12:38:08.292798+00:00",
+    "ended_at": "2026-06-11T12:38:08.327599+00:00",
+    "duration_ms": 34.777,
+    "steps": [],
+    "steps_total": 2,
+    "steps_success": 0,
+    "failed_step": "text.simple_summary",
+    "reason": "text.simple_summary missing context field(s): data.clean_text. available: errors, inputs.file_path, inputs.output_path, logs. suggestions: text.clean_text_basic provides data.clean_text (needs data.raw_text)",
+    "missing_fields": [
+      "data.clean_text"
+    ],
+    "suggestions": [
+      {
+        "metacode_id": "text.clean_text_basic",
+        "name": "Clean Text Basic",
+        "category": "text",
+        "provides": [
+          "data.clean_text"
+        ],
+        "requires": [
+          "data.raw_text"
+        ],
+        "unmet_inputs": [
+          "data.raw_text"
+        ],
+        "ready": false,
+        "score": 9
+      }
+    ],
+    "outputs": {},
+    "context_keys": [
+      "errors",
+      "inputs.file_path",
+      "inputs.output_path",
+      "logs"
+    ],
+    "source_log": "failure_log"
+  },
+  {
+    "run_id": "1e263cc8-c31c-4912-a653-ffef8c1de935",
+    "workflow_id": "broken_missing_summary_chain_planned",
+    "workflow_path": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\workflows\\generated\\broken_missing_summary_chain.planned.yaml",
+    "status": "success",
+    "started_at": "2026-06-11T12:38:08.384311+00:00",
+    "ended_at": "2026-06-11T12:38:08.461062+00:00",
+    "duration_ms": 75.655,
+    "steps": [
+      "io.read_markdown_file",
+      "text.clean_text_basic",
+      "text.simple_summary",
+      "io.write_markdown"
+    ],
+    "steps_total": 4,
+    "steps_success": 4,
+    "failed_step": null,
+    "reason": null,
+    "missing_fields": [],
+    "suggestions": [],
+    "outputs": {
+      "output_file": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\examples\\outputs\\planned_summary.md"
+    },
+    "context_keys": [],
+    "source_log": "run_log"
+  },
+  {
+    "run_id": "cd4bea42-08ce-44e7-9ba9-ffd54f451b94",
+    "workflow_id": "broken_missing_summary_chain",
+    "workflow_path": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\workflows\\broken_missing_summary_chain.yaml",
+    "status": "failed",
+    "started_at": "2026-06-11T12:38:08.466250+00:00",
+    "ended_at": "2026-06-11T12:38:08.512839+00:00",
+    "duration_ms": 46.492,
+    "steps": [],
+    "steps_total": 2,
+    "steps_success": 0,
+    "failed_step": "text.simple_summary",
+    "reason": "text.simple_summary missing context field(s): data.clean_text. available: errors, inputs.file_path, inputs.output_path, logs. suggestions: text.clean_text_basic provides data.clean_text (needs data.raw_text)",
+    "missing_fields": [
+      "data.clean_text"
+    ],
+    "suggestions": [
+      {
+        "metacode_id": "text.clean_text_basic",
+        "name": "Clean Text Basic",
+        "category": "text",
+        "provides": [
+          "data.clean_text"
+        ],
+        "requires": [
+          "data.raw_text"
+        ],
+        "unmet_inputs": [
+          "data.raw_text"
+        ],
+        "ready": false,
+        "score": 9
+      }
+    ],
+    "outputs": {},
+    "context_keys": [
+      "errors",
+      "inputs.file_path",
+      "inputs.output_path",
+      "logs"
+    ],
+    "source_log": "failure_log"
+  },
+  {
+    "run_id": "02ec1b4c-5f85-4057-8684-94666121f5ef",
+    "workflow_id": "broken_missing_summary_chain_planned",
+    "workflow_path": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\workflows\\generated\\broken_missing_summary_chain.planned.yaml",
+    "status": "success",
+    "started_at": "2026-06-11T12:38:08.576514+00:00",
+    "ended_at": "2026-06-11T12:38:08.630098+00:00",
+    "duration_ms": 52.858,
+    "steps": [
+      "io.read_markdown_file",
+      "text.clean_text_basic",
+      "text.simple_summary",
+      "io.write_markdown"
+    ],
+    "steps_total": 4,
+    "steps_success": 4,
+    "failed_step": null,
+    "reason": null,
+    "missing_fields": [],
+    "suggestions": [],
+    "outputs": {
+      "output_file": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\examples\\outputs\\planned_summary.md"
+    },
+    "context_keys": [],
+    "source_log": "run_log"
+  },
+  {
+    "run_id": "61eb403e-051d-423b-bd6b-601746e195ee",
+    "workflow_id": "broken_missing_summary_chain",
+    "workflow_path": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\workflows\\broken_missing_summary_chain.yaml",
+    "status": "failed",
+    "started_at": "2026-06-11T12:38:08.634239+00:00",
+    "ended_at": "2026-06-11T12:38:08.682748+00:00",
+    "duration_ms": 48.633,
+    "steps": [],
+    "steps_total": 2,
+    "steps_success": 0,
+    "failed_step": "text.simple_summary",
+    "reason": "text.simple_summary missing context field(s): data.clean_text. available: errors, inputs.file_path, inputs.output_path, logs. suggestions: text.clean_text_basic provides data.clean_text (needs data.raw_text)",
+    "missing_fields": [
+      "data.clean_text"
+    ],
+    "suggestions": [
+      {
+        "metacode_id": "text.clean_text_basic",
+        "name": "Clean Text Basic",
+        "category": "text",
+        "provides": [
+          "data.clean_text"
+        ],
+        "requires": [
+          "data.raw_text"
+        ],
+        "unmet_inputs": [
+          "data.raw_text"
+        ],
+        "ready": false,
+        "score": 9
+      }
+    ],
+    "outputs": {},
+    "context_keys": [
+      "errors",
+      "inputs.file_path",
+      "inputs.output_path",
+      "logs"
+    ],
+    "source_log": "failure_log"
+  },
+  {
+    "run_id": "7b4911e9-3148-43d8-b8a9-801506632ef1",
+    "workflow_id": "broken_missing_summary_chain_planned",
+    "workflow_path": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\workflows\\generated\\broken_missing_summary_chain.planned.yaml",
+    "status": "success",
+    "started_at": "2026-06-11T12:38:08.745939+00:00",
+    "ended_at": "2026-06-11T12:38:08.804784+00:00",
+    "duration_ms": 59.218,
+    "steps": [
+      "io.read_markdown_file",
+      "text.clean_text_basic",
+      "text.simple_summary",
+      "io.write_markdown"
+    ],
+    "steps_total": 4,
+    "steps_success": 4,
+    "failed_step": null,
+    "reason": null,
+    "missing_fields": [],
+    "suggestions": [],
+    "outputs": {
+      "output_file": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\examples\\outputs\\planned_summary.md"
+    },
+    "context_keys": [],
+    "source_log": "run_log"
+  },
+  {
+    "run_id": "c90e7867-22ec-42e0-bc5a-3bfa9646664c",
+    "workflow_id": "broken_missing_summary_chain_planned",
+    "workflow_path": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\workflows\\generated\\broken_missing_summary_chain.planned.yaml",
+    "status": "success",
+    "started_at": "2026-06-11T12:38:08.806300+00:00",
+    "ended_at": "2026-06-11T12:38:08.855620+00:00",
+    "duration_ms": 49.068,
+    "steps": [
+      "io.read_markdown_file",
+      "text.clean_text_basic",
+      "text.simple_summary",
+      "io.write_markdown"
+    ],
+    "steps_total": 4,
+    "steps_success": 4,
+    "failed_step": null,
+    "reason": null,
+    "missing_fields": [],
+    "suggestions": [],
+    "outputs": {
+      "output_file": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\examples\\outputs\\planned_summary.md"
+    },
+    "context_keys": [],
+    "source_log": "run_log"
+  },
+  {
+    "run_id": "3ee94cef-f2c5-4816-8366-36c4bf1e9365",
+    "workflow_id": "note_to_summary",
+    "workflow_path": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\workflows\\note_to_summary.yaml",
+    "status": "success",
+    "started_at": "2026-06-11T12:38:10.454459+00:00",
+    "ended_at": "2026-06-11T12:38:10.541616+00:00",
+    "duration_ms": 88.132,
+    "steps": [
+      "io.read_markdown_file",
+      "text.clean_text_basic",
+      "text.simple_summary",
+      "io.write_markdown"
+    ],
+    "steps_total": 4,
+    "steps_success": 4,
+    "failed_step": null,
+    "reason": null,
+    "missing_fields": [],
+    "suggestions": [],
+    "outputs": {
+      "output_file": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\examples\\outputs\\summary.md"
+    },
+    "context_keys": [],
+    "source_log": "run_log"
   }
 ]

@@ -21,6 +21,7 @@
           <a href="#overview" class="nav-link active">总览</a>
           <a href="#api" class="nav-link">实时 API</a>
           <a href="#diagnostics" class="nav-link">诊断工作台</a>
+          <a href="#repairs" class="nav-link">修复闭环</a>
           <a href="#stages" class="nav-link">阶段</a>
           <a href="#workflows" class="nav-link">Workflow</a>
           <a href="#failures" class="nav-link">失败诊断</a>
@@ -126,6 +127,38 @@
                 <span class="small-label">recommendation</span>
               </div>
               <div class="diagnostic-list" id="metacodeDiagnostics"></div>
+            </article>
+          </div>
+        </section>
+
+        <section id="repairs" class="section">
+          <div class="section-heading">
+            <h2>修复闭环</h2>
+            <span class="muted">跟踪 fixed / planned 修复路径的验证次数、成功率和最近结果。</span>
+          </div>
+          <div class="repair-metrics" id="repairMetricGrid"></div>
+          <div class="repair-layout">
+            <article class="panel">
+              <div class="panel-head">
+                <h3>策略成功率</h3>
+                <span class="small-label">strategy</span>
+              </div>
+              <div class="repair-list" id="repairStrategyList"></div>
+            </article>
+            <article class="panel">
+              <div class="panel-head">
+                <h3>Workflow 修复</h3>
+                <span class="small-label">source workflow</span>
+              </div>
+              <div class="repair-list" id="repairWorkflowList"></div>
+            </article>
+            <article class="panel">
+              <div class="panel-head">
+                <h3>最新验证</h3>
+                <span class="small-label">latest</span>
+              </div>
+              <div id="repairLatest" class="detail-block"></div>
+              <div class="repair-list compact" id="repairRecentList"></div>
             </article>
           </div>
         </section>

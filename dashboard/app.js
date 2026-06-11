@@ -8,6 +8,7 @@ const files = {
   failures: "failures.json",
   stages: "stages.json",
   workflows: "workflow_graph.json",
+  repairs: "repair_metrics.json",
   reuse: "reuse_summary.json",
   graph: "capability_graph.json",
   graphSummary: "capability_graph_summary.json",
@@ -97,6 +98,7 @@ async function loadFromApi() {
     failures: payload.failures,
     stages: payload.stages,
     workflows: payload.workflows,
+    repairs: payload.repairs || buildRepairMetrics(payload.runs || [], payload.workflows || []),
     reuse: payload.reuse,
     graph: payload.graph,
     graphSummary: payload.graphSummary,
@@ -113,9 +115,10 @@ async function loadFromStaticExports() {
   return {
     ...data,
     diagnostics: buildDiagnostics(data.failures || []),
+    repairs: data.repairs || buildRepairMetrics(data.runs || [], data.workflows || []),
     api: {
       mode: "static-fallback",
-      version: "stage9-compatible",
+      version: "stage12-compatible",
       endpoints: Object.values(files).map((file) => `${STATIC_EXPORT_BASE}/${file}`),
     },
   };
@@ -140,6 +143,133 @@ function sortedRows(counter, countKey = "failure_count") {
     if (countDelta !== 0) return countDelta;
     return String(left.id || left.field || "").localeCompare(String(right.id || right.field || ""));
   });
+}
+
+function percent(successCount, attemptCount) {
+  return attemptCount ? Number(((successCount / attemptCount) * 100).toFixed(1)) : 0;
+}
+
+function inferRepairStrategy(workflowId, workflow = {}) {
+  if (workflow.status_type === "generated_fixed" || workflowId.endsWith("_fixed")) return "fixed";
+  if (workflow.status_type === "generated_planned" || workflowId.endsWith("_planned")) return "planned";
+  return null;
+}
+
+function inferRepairSource(workflowId, strategy, workflow = {}) {
+  if (workflow.generated_from) return workflow.generated_from;
+  const suffix = `_${strategy}`;
+  return workflowId.endsWith(suffix) ? workflowId.slice(0, -suffix.length) : workflowId;
+}
+
+function buildRepairMetrics(runs, workflows) {
+  const workflowById = Object.fromEntries((workflows || []).map((workflow) => [workflow.workflow_id, workflow]));
+  const byStrategy = {};
+  const byWorkflow = {};
+  const recentAttempts = [];
+
+  (runs || []).forEach((run) => {
+    const workflowId = run.workflow_id || "";
+    const workflow = workflowById[workflowId] || {};
+    const strategy = inferRepairStrategy(workflowId, workflow);
+    if (!strategy) return;
+
+    const sourceWorkflowId = inferRepairSource(workflowId, strategy, workflow);
+    const success = run.status === "success";
+    const statusKey = success ? "success_count" : "failed_count";
+
+    const strategyRow = byStrategy[strategy] || {
+      id: strategy,
+      strategy,
+      attempt_count: 0,
+      success_count: 0,
+      failed_count: 0,
+      repair_workflows: {},
+      source_workflows: {},
+      latest_status: "",
+    };
+    strategyRow.attempt_count += 1;
+    strategyRow[statusKey] += 1;
+    strategyRow.repair_workflows[workflowId] = (strategyRow.repair_workflows[workflowId] || 0) + 1;
+    strategyRow.source_workflows[sourceWorkflowId] = (strategyRow.source_workflows[sourceWorkflowId] || 0) + 1;
+    strategyRow.latest_status = run.status || "unknown";
+    byStrategy[strategy] = strategyRow;
+
+    const workflowRow = byWorkflow[sourceWorkflowId] || {
+      id: sourceWorkflowId,
+      source_workflow_id: sourceWorkflowId,
+      attempt_count: 0,
+      success_count: 0,
+      failed_count: 0,
+      strategies: {},
+      repair_workflows: {},
+      latest_repair_workflow_id: "",
+      latest_status: "",
+    };
+    workflowRow.attempt_count += 1;
+    workflowRow[statusKey] += 1;
+    workflowRow.strategies[strategy] = (workflowRow.strategies[strategy] || 0) + 1;
+    workflowRow.repair_workflows[workflowId] = (workflowRow.repair_workflows[workflowId] || 0) + 1;
+    workflowRow.latest_repair_workflow_id = workflowId;
+    workflowRow.latest_status = run.status || "unknown";
+    byWorkflow[sourceWorkflowId] = workflowRow;
+
+    recentAttempts.push({
+      run_id: run.run_id,
+      workflow_id: workflowId,
+      source_workflow_id: sourceWorkflowId,
+      strategy,
+      status: run.status || "unknown",
+      ended_at: run.ended_at,
+      duration_ms: run.duration_ms || 0,
+    });
+  });
+
+  Object.values(byStrategy).forEach((row) => {
+    row.success_rate = percent(row.success_count, row.attempt_count);
+    row.repair_workflow_count = Object.keys(row.repair_workflows).length;
+    row.source_workflow_count = Object.keys(row.source_workflows).length;
+  });
+  Object.values(byWorkflow).forEach((row) => {
+    row.success_rate = percent(row.success_count, row.attempt_count);
+    row.repair_workflow_count = Object.keys(row.repair_workflows).length;
+  });
+
+  const byStrategyRows = Object.values(byStrategy).sort((left, right) => {
+    const countDelta = (right.attempt_count || 0) - (left.attempt_count || 0);
+    if (countDelta !== 0) return countDelta;
+    return left.strategy.localeCompare(right.strategy);
+  });
+  const byWorkflowRows = Object.values(byWorkflow).sort((left, right) => {
+    const countDelta = (right.attempt_count || 0) - (left.attempt_count || 0);
+    if (countDelta !== 0) return countDelta;
+    return left.source_workflow_id.localeCompare(right.source_workflow_id);
+  });
+  const attemptCount = byStrategyRows.reduce((total, row) => total + row.attempt_count, 0);
+  const successCount = byStrategyRows.reduce((total, row) => total + row.success_count, 0);
+  const fixedRow = byStrategy.fixed || {};
+  const plannedRow = byStrategy.planned || {};
+
+  return {
+    summary: {
+      status: "computed",
+      attempt_count: attemptCount,
+      success_count: successCount,
+      failed_count: attemptCount - successCount,
+      repair_success_rate: percent(successCount, attemptCount),
+      fixed_attempt_count: fixedRow.attempt_count || 0,
+      fixed_success_count: fixedRow.success_count || 0,
+      fixed_success_rate: percent(fixedRow.success_count || 0, fixedRow.attempt_count || 0),
+      planned_attempt_count: plannedRow.attempt_count || 0,
+      planned_success_count: plannedRow.success_count || 0,
+      planned_success_rate: percent(plannedRow.success_count || 0, plannedRow.attempt_count || 0),
+      source_workflow_count: byWorkflowRows.length,
+      repair_workflow_count: new Set(recentAttempts.map((attempt) => attempt.workflow_id)).size,
+      latest_attempt: recentAttempts[recentAttempts.length - 1] || null,
+    },
+    by_strategy: byStrategyRows,
+    by_workflow: byWorkflowRows,
+    recent_attempts: recentAttempts.slice(-8).reverse(),
+  };
 }
 
 function buildDiagnostics(failures) {
@@ -295,9 +425,9 @@ function isAutoRefreshEnabled() {
 
 function setHealth(summary) {
   const pill = document.querySelector("#healthPill");
-  const healthy = summary.unresolved_field_count === 0 && summary.current_stage >= 11;
+  const healthy = summary.unresolved_field_count === 0 && summary.current_stage >= 12;
   const source = state.dataSource === "api" ? "API" : "Static";
-  pill.textContent = healthy ? `Stage 11 ${source}` : "Needs Review";
+  pill.textContent = healthy ? `Stage 12 ${source}` : "Needs Review";
   pill.className = `status-pill ${healthy ? "ok" : "warn"}`;
 }
 
@@ -309,7 +439,7 @@ function renderMetrics(summary) {
     ["Workflow", summary.workflow_file_count, `${summary.generated_workflow_count ?? 0} 条生成型路径`],
     ["稳定 Workflow", summary.stable_workflow_count, "复用基线"],
     ["能力图谱边", summary.edge_count, `${summary.field_count} 个字段`],
-    ["失败样本", summary.failure_run_count, "用于诊断与修复"],
+    ["修复成功率", `${summary.repair_success_rate ?? 0}%`, `${formatNumber(summary.repair_attempt_count ?? 0)} 次验证`],
     ["未解析字段", summary.unresolved_field_count, "字段完整性检查"],
   ];
 
@@ -360,8 +490,8 @@ function renderStageGates(summary) {
     {
       label: "阶段报告",
       value: `${summary.stage_report_count ?? 0} 份`,
-      ok: summary.current_stage >= 11,
-      note: "第十一阶段报告进入监控范围",
+      ok: summary.current_stage >= 12,
+      note: "第十二阶段报告进入监控范围",
     },
     {
       label: "字段完整性",
@@ -514,6 +644,93 @@ function renderDiagnostics() {
       </div>
       <div class="diagnostic-row-meta">Suggestions: ${formatNumber(row.suggestion_count)}</div>
       <div class="diagnostic-row-meta">Fields: ${escapeHtml(topKeys(row.missing_fields) || "-")}</div>
+    </div>
+  `);
+}
+
+function strategyLabel(strategy) {
+  return {
+    fixed: "Fixed",
+    planned: "Planned",
+  }[strategy] || strategy;
+}
+
+function renderRepairMetrics() {
+  const repairs = state.data.repairs || buildRepairMetrics(state.data.runs || [], state.data.workflows || []);
+  const summary = repairs.summary || {};
+  const latest = summary.latest_attempt;
+  const metrics = [
+    ["修复验证", summary.attempt_count, "fixed / planned 运行"],
+    ["修复成功率", `${summary.repair_success_rate ?? 0}%`, `${formatNumber(summary.success_count || 0)} 次成功`],
+    ["Fixed 成功率", `${summary.fixed_success_rate ?? 0}%`, `${formatNumber(summary.fixed_attempt_count || 0)} 次验证`],
+    ["Planned 成功率", `${summary.planned_success_rate ?? 0}%`, `${formatNumber(summary.planned_attempt_count || 0)} 次验证`],
+  ];
+
+  document.querySelector("#repairMetricGrid").innerHTML = metrics
+    .map(
+      ([label, value, note]) => `
+        <article class="metric-card">
+          <div class="metric-label">${escapeHtml(label)}</div>
+          <div class="metric-value">${typeof value === "number" ? formatNumber(value) : escapeHtml(value)}</div>
+          <div class="metric-note">${escapeHtml(note)}</div>
+        </article>
+      `,
+    )
+    .join("");
+
+  document.querySelector("#repairLatest").innerHTML = latest
+    ? `
+      <div class="kv-row"><span>Workflow</span><span class="value-strong">${escapeHtml(latest.workflow_id)}</span></div>
+      <div class="kv-row"><span>Source</span><span>${escapeHtml(latest.source_workflow_id)}</span></div>
+      <div class="kv-row"><span>Strategy</span><span>${escapeHtml(strategyLabel(latest.strategy))}</span></div>
+      <div class="kv-row"><span>Status</span><span>${escapeHtml(latest.status)}</span></div>
+    `
+    : `<div class="empty-state">暂无修复验证记录</div>`;
+}
+
+function renderRepairList(selector, rows, renderer) {
+  const target = document.querySelector(selector);
+  if (!rows?.length) {
+    target.innerHTML = `<div class="empty-state">暂无修复数据</div>`;
+    return;
+  }
+  target.innerHTML = rows.slice(0, 6).map(renderer).join("");
+}
+
+function renderRepairs() {
+  const repairs = state.data.repairs || buildRepairMetrics(state.data.runs || [], state.data.workflows || []);
+  renderRepairMetrics();
+
+  renderRepairList("#repairStrategyList", repairs.by_strategy, (row) => `
+    <div class="repair-row">
+      <div class="diagnostic-row-head">
+        <div class="diagnostic-row-title">${escapeHtml(strategyLabel(row.strategy))}</div>
+        <span class="tag green">${row.success_rate}%</span>
+      </div>
+      <div class="diagnostic-row-meta">Attempts: ${formatNumber(row.attempt_count)} / Success: ${formatNumber(row.success_count)}</div>
+      <div class="diagnostic-row-meta">Sources: ${escapeHtml(topKeys(row.source_workflows) || "-")}</div>
+    </div>
+  `);
+
+  renderRepairList("#repairWorkflowList", repairs.by_workflow, (row) => `
+    <div class="repair-row">
+      <div class="diagnostic-row-head">
+        <div class="diagnostic-row-title">${escapeHtml(row.source_workflow_id)}</div>
+        <span class="tag green">${row.success_rate}%</span>
+      </div>
+      <div class="diagnostic-row-meta">Strategies: ${escapeHtml(topKeys(row.strategies) || "-")}</div>
+      <div class="diagnostic-row-meta">Latest: ${escapeHtml(row.latest_repair_workflow_id || "-")} / ${escapeHtml(row.latest_status || "-")}</div>
+    </div>
+  `);
+
+  renderRepairList("#repairRecentList", repairs.recent_attempts, (attempt) => `
+    <div class="repair-row">
+      <div class="diagnostic-row-head">
+        <div class="diagnostic-row-title">${escapeHtml(attempt.workflow_id)}</div>
+        <span class="tag ${attempt.status === "success" ? "green" : "red"}">${escapeHtml(attempt.status)}</span>
+      </div>
+      <div class="diagnostic-row-meta">Source: ${escapeHtml(attempt.source_workflow_id)} / ${escapeHtml(strategyLabel(attempt.strategy))}</div>
+      <div class="diagnostic-row-meta">${escapeHtml(formatTime(attempt.ended_at))} / ${escapeHtml(formatMs(attempt.duration_ms))}</div>
     </div>
   `);
 }
@@ -769,6 +986,7 @@ function renderAll() {
   renderStageGates(summary);
   renderApiStatus();
   renderDiagnostics();
+  renderRepairs();
   renderStages();
   renderWorkflows();
   renderFailures();

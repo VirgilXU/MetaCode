@@ -1,0 +1,172 @@
+{
+  "summary": {
+    "status": "computed",
+    "attempt_count": 122,
+    "success_count": 122,
+    "failed_count": 0,
+    "repair_success_rate": 100.0,
+    "fixed_attempt_count": 64,
+    "fixed_success_count": 64,
+    "fixed_success_rate": 100.0,
+    "planned_attempt_count": 58,
+    "planned_success_count": 58,
+    "planned_success_rate": 100.0,
+    "source_workflow_count": 2,
+    "repair_workflow_count": 2,
+    "latest_attempt": {
+      "run_id": "c90e7867-22ec-42e0-bc5a-3bfa9646664c",
+      "workflow_id": "broken_missing_summary_chain_planned",
+      "source_workflow_id": "broken_missing_summary_chain",
+      "strategy": "planned",
+      "status": "success",
+      "ended_at": "2026-06-11T12:38:08.855620+00:00",
+      "duration_ms": 49.068
+    }
+  },
+  "by_strategy": [
+    {
+      "id": "fixed",
+      "strategy": "fixed",
+      "attempt_count": 64,
+      "success_count": 64,
+      "failed_count": 0,
+      "repair_workflows": {
+        "broken_missing_clean_text_fixed": 64
+      },
+      "source_workflows": {
+        "broken_missing_clean_text": 64
+      },
+      "latest_status": "success",
+      "success_rate": 100.0,
+      "repair_workflow_count": 1,
+      "source_workflow_count": 1
+    },
+    {
+      "id": "planned",
+      "strategy": "planned",
+      "attempt_count": 58,
+      "success_count": 58,
+      "failed_count": 0,
+      "repair_workflows": {
+        "broken_missing_summary_chain_planned": 58
+      },
+      "source_workflows": {
+        "broken_missing_summary_chain": 58
+      },
+      "latest_status": "success",
+      "success_rate": 100.0,
+      "repair_workflow_count": 1,
+      "source_workflow_count": 1
+    }
+  ],
+  "by_workflow": [
+    {
+      "id": "broken_missing_clean_text",
+      "source_workflow_id": "broken_missing_clean_text",
+      "attempt_count": 64,
+      "success_count": 64,
+      "failed_count": 0,
+      "strategies": {
+        "fixed": 64
+      },
+      "repair_workflows": {
+        "broken_missing_clean_text_fixed": 64
+      },
+      "latest_repair_workflow_id": "broken_missing_clean_text_fixed",
+      "latest_status": "success",
+      "success_rate": 100.0,
+      "repair_workflow_count": 1
+    },
+    {
+      "id": "broken_missing_summary_chain",
+      "source_workflow_id": "broken_missing_summary_chain",
+      "attempt_count": 58,
+      "success_count": 58,
+      "failed_count": 0,
+      "strategies": {
+        "planned": 58
+      },
+      "repair_workflows": {
+        "broken_missing_summary_chain_planned": 58
+      },
+      "latest_repair_workflow_id": "broken_missing_summary_chain_planned",
+      "latest_status": "success",
+      "success_rate": 100.0,
+      "repair_workflow_count": 1
+    }
+  ],
+  "recent_attempts": [
+    {
+      "run_id": "c90e7867-22ec-42e0-bc5a-3bfa9646664c",
+      "workflow_id": "broken_missing_summary_chain_planned",
+      "source_workflow_id": "broken_missing_summary_chain",
+      "strategy": "planned",
+      "status": "success",
+      "ended_at": "2026-06-11T12:38:08.855620+00:00",
+      "duration_ms": 49.068
+    },
+    {
+      "run_id": "7b4911e9-3148-43d8-b8a9-801506632ef1",
+      "workflow_id": "broken_missing_summary_chain_planned",
+      "source_workflow_id": "broken_missing_summary_chain",
+      "strategy": "planned",
+      "status": "success",
+      "ended_at": "2026-06-11T12:38:08.804784+00:00",
+      "duration_ms": 59.218
+    },
+    {
+      "run_id": "02ec1b4c-5f85-4057-8684-94666121f5ef",
+      "workflow_id": "broken_missing_summary_chain_planned",
+      "source_workflow_id": "broken_missing_summary_chain",
+      "strategy": "planned",
+      "status": "success",
+      "ended_at": "2026-06-11T12:38:08.630098+00:00",
+      "duration_ms": 52.858
+    },
+    {
+      "run_id": "1e263cc8-c31c-4912-a653-ffef8c1de935",
+      "workflow_id": "broken_missing_summary_chain_planned",
+      "source_workflow_id": "broken_missing_summary_chain",
+      "strategy": "planned",
+      "status": "success",
+      "ended_at": "2026-06-11T12:38:08.461062+00:00",
+      "duration_ms": 75.655
+    },
+    {
+      "run_id": "a6166a82-9d78-4205-aaea-8cc61ec5eaf1",
+      "workflow_id": "broken_missing_clean_text_fixed",
+      "source_workflow_id": "broken_missing_clean_text",
+      "strategy": "fixed",
+      "status": "success",
+      "ended_at": "2026-06-11T12:38:08.071391+00:00",
+      "duration_ms": 75.003
+    },
+    {
+      "run_id": "6aa4b1a9-4fb0-4fdc-acb4-86de0a0ec5df",
+      "workflow_id": "broken_missing_clean_text_fixed",
+      "source_workflow_id": "broken_missing_clean_text",
+      "strategy": "fixed",
+      "status": "success",
+      "ended_at": "2026-06-11T12:38:07.992722+00:00",
+      "duration_ms": 94.125
+    },
+    {
+      "run_id": "9853ee20-0f54-462e-9708-77680749aa9b",
+      "workflow_id": "broken_missing_clean_text_fixed",
+      "source_workflow_id": "broken_missing_clean_text",
+      "strategy": "fixed",
+      "status": "success",
+      "ended_at": "2026-06-11T12:38:07.811526+00:00",
+      "duration_ms": 74.408
+    },
+    {
+      "run_id": "229a6a27-d157-43de-897b-ac45057902ee",
+      "workflow_id": "broken_missing_clean_text_fixed",
+      "source_workflow_id": "broken_missing_clean_text",
+      "strategy": "fixed",
+      "status": "success",
+      "ended_at": "2026-06-11T12:38:07.666123+00:00",
+      "duration_ms": 91.182
+    }
+  ]
+}

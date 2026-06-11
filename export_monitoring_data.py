@@ -18,6 +18,7 @@ def main() -> int:
             "failures.json",
             "stages.json",
             "workflow_graph.json",
+            "repair_metrics.json",
             "reuse_summary.json",
             "capability_graph.json",
             "capability_graph_summary.json",
