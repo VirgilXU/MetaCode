@@ -3515,5 +3515,791 @@
       "logs"
     ],
     "source_log": "failure_log"
+  },
+  {
+    "run_id": "6672d293-b260-4dc4-8d46-6cdda19e13a3",
+    "workflow_id": "broken_missing_clean_text",
+    "workflow_path": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\workflows\\broken_missing_clean_text.yaml",
+    "status": "failed",
+    "started_at": "2026-06-11T04:47:33.316013+00:00",
+    "ended_at": "2026-06-11T04:47:33.357712+00:00",
+    "duration_ms": 42.737,
+    "steps": [
+      "io.read_markdown_file"
+    ],
+    "steps_total": 2,
+    "steps_success": 1,
+    "failed_step": "text.simple_summary",
+    "reason": "text.simple_summary missing context field(s): data.clean_text. available: data.raw_text, errors, inputs.file_path, inputs.output_path, logs. suggestions: text.clean_text_basic provides data.clean_text (ready)",
+    "missing_fields": [
+      "data.clean_text"
+    ],
+    "suggestions": [
+      {
+        "metacode_id": "text.clean_text_basic",
+        "name": "Clean Text Basic",
+        "category": "text",
+        "provides": [
+          "data.clean_text"
+        ],
+        "requires": [
+          "data.raw_text"
+        ],
+        "unmet_inputs": [],
+        "ready": true,
+        "score": 10
+      }
+    ],
+    "outputs": {},
+    "context_keys": [
+      "data.raw_text",
+      "errors",
+      "inputs.file_path",
+      "inputs.output_path",
+      "logs"
+    ],
+    "source_log": "failure_log"
+  },
+  {
+    "run_id": "2a6c6532-8276-4a0f-9fba-8281211bc94e",
+    "workflow_id": "broken_missing_clean_text",
+    "workflow_path": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\workflows\\broken_missing_clean_text.yaml",
+    "status": "failed",
+    "started_at": "2026-06-11T04:47:34.023350+00:00",
+    "ended_at": "2026-06-11T04:47:34.063247+00:00",
+    "duration_ms": 39.562,
+    "steps": [
+      "io.read_markdown_file"
+    ],
+    "steps_total": 2,
+    "steps_success": 1,
+    "failed_step": "text.simple_summary",
+    "reason": "text.simple_summary missing context field(s): data.clean_text. available: data.raw_text, errors, inputs.file_path, inputs.output_path, logs. suggestions: text.clean_text_basic provides data.clean_text (ready)",
+    "missing_fields": [
+      "data.clean_text"
+    ],
+    "suggestions": [
+      {
+        "metacode_id": "text.clean_text_basic",
+        "name": "Clean Text Basic",
+        "category": "text",
+        "provides": [
+          "data.clean_text"
+        ],
+        "requires": [
+          "data.raw_text"
+        ],
+        "unmet_inputs": [],
+        "ready": true,
+        "score": 10
+      }
+    ],
+    "outputs": {},
+    "context_keys": [
+      "data.raw_text",
+      "errors",
+      "inputs.file_path",
+      "inputs.output_path",
+      "logs"
+    ],
+    "source_log": "failure_log"
+  },
+  {
+    "run_id": "914e0981-afb7-41fd-9eb1-ab3982b6e92d",
+    "workflow_id": "broken_missing_clean_text",
+    "workflow_path": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\workflows\\broken_missing_clean_text.yaml",
+    "status": "failed",
+    "started_at": "2026-06-11T04:47:34.147824+00:00",
+    "ended_at": "2026-06-11T04:47:34.196598+00:00",
+    "duration_ms": 49.744,
+    "steps": [
+      "io.read_markdown_file"
+    ],
+    "steps_total": 2,
+    "steps_success": 1,
+    "failed_step": "text.simple_summary",
+    "reason": "text.simple_summary missing context field(s): data.clean_text. available: data.raw_text, errors, inputs.file_path, inputs.output_path, logs. suggestions: text.clean_text_basic provides data.clean_text (ready)",
+    "missing_fields": [
+      "data.clean_text"
+    ],
+    "suggestions": [
+      {
+        "metacode_id": "text.clean_text_basic",
+        "name": "Clean Text Basic",
+        "category": "text",
+        "provides": [
+          "data.clean_text"
+        ],
+        "requires": [
+          "data.raw_text"
+        ],
+        "unmet_inputs": [],
+        "ready": true,
+        "score": 10
+      }
+    ],
+    "outputs": {},
+    "context_keys": [
+      "data.raw_text",
+      "errors",
+      "inputs.file_path",
+      "inputs.output_path",
+      "logs"
+    ],
+    "source_log": "failure_log"
+  },
+  {
+    "run_id": "308be5f5-481a-4ac7-ab99-38b5ccdb1396",
+    "workflow_id": "broken_missing_clean_text",
+    "workflow_path": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\workflows\\broken_missing_clean_text.yaml",
+    "status": "failed",
+    "started_at": "2026-06-11T04:47:34.283827+00:00",
+    "ended_at": "2026-06-11T04:47:34.323013+00:00",
+    "duration_ms": 37.905,
+    "steps": [
+      "io.read_markdown_file"
+    ],
+    "steps_total": 2,
+    "steps_success": 1,
+    "failed_step": "text.simple_summary",
+    "reason": "text.simple_summary missing context field(s): data.clean_text. available: data.raw_text, errors, inputs.file_path, inputs.output_path, logs. suggestions: text.clean_text_basic provides data.clean_text (ready)",
+    "missing_fields": [
+      "data.clean_text"
+    ],
+    "suggestions": [
+      {
+        "metacode_id": "text.clean_text_basic",
+        "name": "Clean Text Basic",
+        "category": "text",
+        "provides": [
+          "data.clean_text"
+        ],
+        "requires": [
+          "data.raw_text"
+        ],
+        "unmet_inputs": [],
+        "ready": true,
+        "score": 10
+      }
+    ],
+    "outputs": {},
+    "context_keys": [
+      "data.raw_text",
+      "errors",
+      "inputs.file_path",
+      "inputs.output_path",
+      "logs"
+    ],
+    "source_log": "failure_log"
+  },
+  {
+    "run_id": "b65a2fc4-97d1-4054-a428-f96565103c52",
+    "workflow_id": "broken_missing_clean_text",
+    "workflow_path": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\workflows\\broken_missing_clean_text.yaml",
+    "status": "failed",
+    "started_at": "2026-06-11T04:47:34.379128+00:00",
+    "ended_at": "2026-06-11T04:47:34.423762+00:00",
+    "duration_ms": 44.721,
+    "steps": [
+      "io.read_markdown_file"
+    ],
+    "steps_total": 2,
+    "steps_success": 1,
+    "failed_step": "text.simple_summary",
+    "reason": "text.simple_summary missing context field(s): data.clean_text. available: data.raw_text, errors, inputs.file_path, inputs.output_path, logs. suggestions: text.clean_text_basic provides data.clean_text (ready)",
+    "missing_fields": [
+      "data.clean_text"
+    ],
+    "suggestions": [
+      {
+        "metacode_id": "text.clean_text_basic",
+        "name": "Clean Text Basic",
+        "category": "text",
+        "provides": [
+          "data.clean_text"
+        ],
+        "requires": [
+          "data.raw_text"
+        ],
+        "unmet_inputs": [],
+        "ready": true,
+        "score": 10
+      }
+    ],
+    "outputs": {},
+    "context_keys": [
+      "data.raw_text",
+      "errors",
+      "inputs.file_path",
+      "inputs.output_path",
+      "logs"
+    ],
+    "source_log": "failure_log"
+  },
+  {
+    "run_id": "9c647221-e3e2-47e3-b102-57d6185fc1d9",
+    "workflow_id": "broken_missing_clean_text",
+    "workflow_path": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\workflows\\broken_missing_clean_text.yaml",
+    "status": "failed",
+    "started_at": "2026-06-11T04:47:34.481576+00:00",
+    "ended_at": "2026-06-11T04:47:34.539316+00:00",
+    "duration_ms": 58.089,
+    "steps": [
+      "io.read_markdown_file"
+    ],
+    "steps_total": 2,
+    "steps_success": 1,
+    "failed_step": "text.simple_summary",
+    "reason": "text.simple_summary missing context field(s): data.clean_text. available: data.raw_text, errors, inputs.file_path, inputs.output_path, logs. suggestions: text.clean_text_basic provides data.clean_text (ready)",
+    "missing_fields": [
+      "data.clean_text"
+    ],
+    "suggestions": [
+      {
+        "metacode_id": "text.clean_text_basic",
+        "name": "Clean Text Basic",
+        "category": "text",
+        "provides": [
+          "data.clean_text"
+        ],
+        "requires": [
+          "data.raw_text"
+        ],
+        "unmet_inputs": [],
+        "ready": true,
+        "score": 10
+      }
+    ],
+    "outputs": {},
+    "context_keys": [
+      "data.raw_text",
+      "errors",
+      "inputs.file_path",
+      "inputs.output_path",
+      "logs"
+    ],
+    "source_log": "failure_log"
+  },
+  {
+    "run_id": "5022fdc9-7311-48a6-87e9-885d5b97e7d5",
+    "workflow_id": "broken_missing_summary_chain",
+    "workflow_path": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\workflows\\broken_missing_summary_chain.yaml",
+    "status": "failed",
+    "started_at": "2026-06-11T04:47:34.781401+00:00",
+    "ended_at": "2026-06-11T04:47:34.829648+00:00",
+    "duration_ms": 47.979,
+    "steps": [],
+    "steps_total": 2,
+    "steps_success": 0,
+    "failed_step": "text.simple_summary",
+    "reason": "text.simple_summary missing context field(s): data.clean_text. available: errors, inputs.file_path, inputs.output_path, logs. suggestions: text.clean_text_basic provides data.clean_text (needs data.raw_text)",
+    "missing_fields": [
+      "data.clean_text"
+    ],
+    "suggestions": [
+      {
+        "metacode_id": "text.clean_text_basic",
+        "name": "Clean Text Basic",
+        "category": "text",
+        "provides": [
+          "data.clean_text"
+        ],
+        "requires": [
+          "data.raw_text"
+        ],
+        "unmet_inputs": [
+          "data.raw_text"
+        ],
+        "ready": false,
+        "score": 9
+      }
+    ],
+    "outputs": {},
+    "context_keys": [
+      "errors",
+      "inputs.file_path",
+      "inputs.output_path",
+      "logs"
+    ],
+    "source_log": "failure_log"
+  },
+  {
+    "run_id": "e95170b4-26b8-46fd-b84a-f058c5dccd4f",
+    "workflow_id": "broken_missing_summary_chain",
+    "workflow_path": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\workflows\\broken_missing_summary_chain.yaml",
+    "status": "failed",
+    "started_at": "2026-06-11T04:47:34.931710+00:00",
+    "ended_at": "2026-06-11T04:47:34.970668+00:00",
+    "duration_ms": 38.598,
+    "steps": [],
+    "steps_total": 2,
+    "steps_success": 0,
+    "failed_step": "text.simple_summary",
+    "reason": "text.simple_summary missing context field(s): data.clean_text. available: errors, inputs.file_path, inputs.output_path, logs. suggestions: text.clean_text_basic provides data.clean_text (needs data.raw_text)",
+    "missing_fields": [
+      "data.clean_text"
+    ],
+    "suggestions": [
+      {
+        "metacode_id": "text.clean_text_basic",
+        "name": "Clean Text Basic",
+        "category": "text",
+        "provides": [
+          "data.clean_text"
+        ],
+        "requires": [
+          "data.raw_text"
+        ],
+        "unmet_inputs": [
+          "data.raw_text"
+        ],
+        "ready": false,
+        "score": 9
+      }
+    ],
+    "outputs": {},
+    "context_keys": [
+      "errors",
+      "inputs.file_path",
+      "inputs.output_path",
+      "logs"
+    ],
+    "source_log": "failure_log"
+  },
+  {
+    "run_id": "4b95f99d-2813-4ef3-97a2-d637ca180b64",
+    "workflow_id": "broken_missing_summary_chain",
+    "workflow_path": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\workflows\\broken_missing_summary_chain.yaml",
+    "status": "failed",
+    "started_at": "2026-06-11T04:47:35.044585+00:00",
+    "ended_at": "2026-06-11T04:47:35.074496+00:00",
+    "duration_ms": 30.883,
+    "steps": [],
+    "steps_total": 2,
+    "steps_success": 0,
+    "failed_step": "text.simple_summary",
+    "reason": "text.simple_summary missing context field(s): data.clean_text. available: errors, inputs.file_path, inputs.output_path, logs. suggestions: text.clean_text_basic provides data.clean_text (needs data.raw_text)",
+    "missing_fields": [
+      "data.clean_text"
+    ],
+    "suggestions": [
+      {
+        "metacode_id": "text.clean_text_basic",
+        "name": "Clean Text Basic",
+        "category": "text",
+        "provides": [
+          "data.clean_text"
+        ],
+        "requires": [
+          "data.raw_text"
+        ],
+        "unmet_inputs": [
+          "data.raw_text"
+        ],
+        "ready": false,
+        "score": 9
+      }
+    ],
+    "outputs": {},
+    "context_keys": [
+      "errors",
+      "inputs.file_path",
+      "inputs.output_path",
+      "logs"
+    ],
+    "source_log": "failure_log"
+  },
+  {
+    "run_id": "fdc63f00-36a1-4c45-b061-714a5d25898d",
+    "workflow_id": "broken_missing_clean_text",
+    "workflow_path": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\workflows\\broken_missing_clean_text.yaml",
+    "status": "failed",
+    "started_at": "2026-06-11T04:48:06.364613+00:00",
+    "ended_at": "2026-06-11T04:48:06.393105+00:00",
+    "duration_ms": 28.508,
+    "steps": [
+      "io.read_markdown_file"
+    ],
+    "steps_total": 2,
+    "steps_success": 1,
+    "failed_step": "text.simple_summary",
+    "reason": "text.simple_summary missing context field(s): data.clean_text. available: data.raw_text, errors, inputs.file_path, inputs.output_path, logs. suggestions: text.clean_text_basic provides data.clean_text (ready)",
+    "missing_fields": [
+      "data.clean_text"
+    ],
+    "suggestions": [
+      {
+        "metacode_id": "text.clean_text_basic",
+        "name": "Clean Text Basic",
+        "category": "text",
+        "provides": [
+          "data.clean_text"
+        ],
+        "requires": [
+          "data.raw_text"
+        ],
+        "unmet_inputs": [],
+        "ready": true,
+        "score": 10
+      }
+    ],
+    "outputs": {},
+    "context_keys": [
+      "data.raw_text",
+      "errors",
+      "inputs.file_path",
+      "inputs.output_path",
+      "logs"
+    ],
+    "source_log": "failure_log"
+  },
+  {
+    "run_id": "14598a16-0fd3-420a-b5e1-20327d8fa33b",
+    "workflow_id": "broken_missing_clean_text",
+    "workflow_path": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\workflows\\broken_missing_clean_text.yaml",
+    "status": "failed",
+    "started_at": "2026-06-11T04:48:06.810860+00:00",
+    "ended_at": "2026-06-11T04:48:06.834300+00:00",
+    "duration_ms": 24.085,
+    "steps": [
+      "io.read_markdown_file"
+    ],
+    "steps_total": 2,
+    "steps_success": 1,
+    "failed_step": "text.simple_summary",
+    "reason": "text.simple_summary missing context field(s): data.clean_text. available: data.raw_text, errors, inputs.file_path, inputs.output_path, logs. suggestions: text.clean_text_basic provides data.clean_text (ready)",
+    "missing_fields": [
+      "data.clean_text"
+    ],
+    "suggestions": [
+      {
+        "metacode_id": "text.clean_text_basic",
+        "name": "Clean Text Basic",
+        "category": "text",
+        "provides": [
+          "data.clean_text"
+        ],
+        "requires": [
+          "data.raw_text"
+        ],
+        "unmet_inputs": [],
+        "ready": true,
+        "score": 10
+      }
+    ],
+    "outputs": {},
+    "context_keys": [
+      "data.raw_text",
+      "errors",
+      "inputs.file_path",
+      "inputs.output_path",
+      "logs"
+    ],
+    "source_log": "failure_log"
+  },
+  {
+    "run_id": "d49c0430-5a59-4f72-a3aa-cdc53e1b6137",
+    "workflow_id": "broken_missing_clean_text",
+    "workflow_path": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\workflows\\broken_missing_clean_text.yaml",
+    "status": "failed",
+    "started_at": "2026-06-11T04:48:06.899731+00:00",
+    "ended_at": "2026-06-11T04:48:06.928568+00:00",
+    "duration_ms": 28.698,
+    "steps": [
+      "io.read_markdown_file"
+    ],
+    "steps_total": 2,
+    "steps_success": 1,
+    "failed_step": "text.simple_summary",
+    "reason": "text.simple_summary missing context field(s): data.clean_text. available: data.raw_text, errors, inputs.file_path, inputs.output_path, logs. suggestions: text.clean_text_basic provides data.clean_text (ready)",
+    "missing_fields": [
+      "data.clean_text"
+    ],
+    "suggestions": [
+      {
+        "metacode_id": "text.clean_text_basic",
+        "name": "Clean Text Basic",
+        "category": "text",
+        "provides": [
+          "data.clean_text"
+        ],
+        "requires": [
+          "data.raw_text"
+        ],
+        "unmet_inputs": [],
+        "ready": true,
+        "score": 10
+      }
+    ],
+    "outputs": {},
+    "context_keys": [
+      "data.raw_text",
+      "errors",
+      "inputs.file_path",
+      "inputs.output_path",
+      "logs"
+    ],
+    "source_log": "failure_log"
+  },
+  {
+    "run_id": "fc6588a5-6c5e-43ad-bbb6-07a6d2bdeb77",
+    "workflow_id": "broken_missing_clean_text",
+    "workflow_path": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\workflows\\broken_missing_clean_text.yaml",
+    "status": "failed",
+    "started_at": "2026-06-11T04:48:06.990111+00:00",
+    "ended_at": "2026-06-11T04:48:07.023179+00:00",
+    "duration_ms": 33.045,
+    "steps": [
+      "io.read_markdown_file"
+    ],
+    "steps_total": 2,
+    "steps_success": 1,
+    "failed_step": "text.simple_summary",
+    "reason": "text.simple_summary missing context field(s): data.clean_text. available: data.raw_text, errors, inputs.file_path, inputs.output_path, logs. suggestions: text.clean_text_basic provides data.clean_text (ready)",
+    "missing_fields": [
+      "data.clean_text"
+    ],
+    "suggestions": [
+      {
+        "metacode_id": "text.clean_text_basic",
+        "name": "Clean Text Basic",
+        "category": "text",
+        "provides": [
+          "data.clean_text"
+        ],
+        "requires": [
+          "data.raw_text"
+        ],
+        "unmet_inputs": [],
+        "ready": true,
+        "score": 10
+      }
+    ],
+    "outputs": {},
+    "context_keys": [
+      "data.raw_text",
+      "errors",
+      "inputs.file_path",
+      "inputs.output_path",
+      "logs"
+    ],
+    "source_log": "failure_log"
+  },
+  {
+    "run_id": "15b755a2-7db5-4b65-9988-b2d02fe94aeb",
+    "workflow_id": "broken_missing_clean_text",
+    "workflow_path": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\workflows\\broken_missing_clean_text.yaml",
+    "status": "failed",
+    "started_at": "2026-06-11T04:48:07.062251+00:00",
+    "ended_at": "2026-06-11T04:48:07.089031+00:00",
+    "duration_ms": 26.743,
+    "steps": [
+      "io.read_markdown_file"
+    ],
+    "steps_total": 2,
+    "steps_success": 1,
+    "failed_step": "text.simple_summary",
+    "reason": "text.simple_summary missing context field(s): data.clean_text. available: data.raw_text, errors, inputs.file_path, inputs.output_path, logs. suggestions: text.clean_text_basic provides data.clean_text (ready)",
+    "missing_fields": [
+      "data.clean_text"
+    ],
+    "suggestions": [
+      {
+        "metacode_id": "text.clean_text_basic",
+        "name": "Clean Text Basic",
+        "category": "text",
+        "provides": [
+          "data.clean_text"
+        ],
+        "requires": [
+          "data.raw_text"
+        ],
+        "unmet_inputs": [],
+        "ready": true,
+        "score": 10
+      }
+    ],
+    "outputs": {},
+    "context_keys": [
+      "data.raw_text",
+      "errors",
+      "inputs.file_path",
+      "inputs.output_path",
+      "logs"
+    ],
+    "source_log": "failure_log"
+  },
+  {
+    "run_id": "936f6e1c-085b-42c0-a543-f28ad8750661",
+    "workflow_id": "broken_missing_clean_text",
+    "workflow_path": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\workflows\\broken_missing_clean_text.yaml",
+    "status": "failed",
+    "started_at": "2026-06-11T04:48:07.138585+00:00",
+    "ended_at": "2026-06-11T04:48:07.169856+00:00",
+    "duration_ms": 32.15,
+    "steps": [
+      "io.read_markdown_file"
+    ],
+    "steps_total": 2,
+    "steps_success": 1,
+    "failed_step": "text.simple_summary",
+    "reason": "text.simple_summary missing context field(s): data.clean_text. available: data.raw_text, errors, inputs.file_path, inputs.output_path, logs. suggestions: text.clean_text_basic provides data.clean_text (ready)",
+    "missing_fields": [
+      "data.clean_text"
+    ],
+    "suggestions": [
+      {
+        "metacode_id": "text.clean_text_basic",
+        "name": "Clean Text Basic",
+        "category": "text",
+        "provides": [
+          "data.clean_text"
+        ],
+        "requires": [
+          "data.raw_text"
+        ],
+        "unmet_inputs": [],
+        "ready": true,
+        "score": 10
+      }
+    ],
+    "outputs": {},
+    "context_keys": [
+      "data.raw_text",
+      "errors",
+      "inputs.file_path",
+      "inputs.output_path",
+      "logs"
+    ],
+    "source_log": "failure_log"
+  },
+  {
+    "run_id": "acde9642-82dc-404e-9837-c020b7bc4c4c",
+    "workflow_id": "broken_missing_summary_chain",
+    "workflow_path": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\workflows\\broken_missing_summary_chain.yaml",
+    "status": "failed",
+    "started_at": "2026-06-11T04:48:07.338593+00:00",
+    "ended_at": "2026-06-11T04:48:07.371583+00:00",
+    "duration_ms": 33.959,
+    "steps": [],
+    "steps_total": 2,
+    "steps_success": 0,
+    "failed_step": "text.simple_summary",
+    "reason": "text.simple_summary missing context field(s): data.clean_text. available: errors, inputs.file_path, inputs.output_path, logs. suggestions: text.clean_text_basic provides data.clean_text (needs data.raw_text)",
+    "missing_fields": [
+      "data.clean_text"
+    ],
+    "suggestions": [
+      {
+        "metacode_id": "text.clean_text_basic",
+        "name": "Clean Text Basic",
+        "category": "text",
+        "provides": [
+          "data.clean_text"
+        ],
+        "requires": [
+          "data.raw_text"
+        ],
+        "unmet_inputs": [
+          "data.raw_text"
+        ],
+        "ready": false,
+        "score": 9
+      }
+    ],
+    "outputs": {},
+    "context_keys": [
+      "errors",
+      "inputs.file_path",
+      "inputs.output_path",
+      "logs"
+    ],
+    "source_log": "failure_log"
+  },
+  {
+    "run_id": "d4e22e67-ed3c-4331-9704-7c0d084ceb75",
+    "workflow_id": "broken_missing_summary_chain",
+    "workflow_path": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\workflows\\broken_missing_summary_chain.yaml",
+    "status": "failed",
+    "started_at": "2026-06-11T04:48:07.462951+00:00",
+    "ended_at": "2026-06-11T04:48:07.506826+00:00",
+    "duration_ms": 43.297,
+    "steps": [],
+    "steps_total": 2,
+    "steps_success": 0,
+    "failed_step": "text.simple_summary",
+    "reason": "text.simple_summary missing context field(s): data.clean_text. available: errors, inputs.file_path, inputs.output_path, logs. suggestions: text.clean_text_basic provides data.clean_text (needs data.raw_text)",
+    "missing_fields": [
+      "data.clean_text"
+    ],
+    "suggestions": [
+      {
+        "metacode_id": "text.clean_text_basic",
+        "name": "Clean Text Basic",
+        "category": "text",
+        "provides": [
+          "data.clean_text"
+        ],
+        "requires": [
+          "data.raw_text"
+        ],
+        "unmet_inputs": [
+          "data.raw_text"
+        ],
+        "ready": false,
+        "score": 9
+      }
+    ],
+    "outputs": {},
+    "context_keys": [
+      "errors",
+      "inputs.file_path",
+      "inputs.output_path",
+      "logs"
+    ],
+    "source_log": "failure_log"
+  },
+  {
+    "run_id": "517bf044-b9b0-40cd-b8b5-5a71c5efb5f0",
+    "workflow_id": "broken_missing_summary_chain",
+    "workflow_path": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\workflows\\broken_missing_summary_chain.yaml",
+    "status": "failed",
+    "started_at": "2026-06-11T04:48:07.585886+00:00",
+    "ended_at": "2026-06-11T04:48:07.622998+00:00",
+    "duration_ms": 36.693,
+    "steps": [],
+    "steps_total": 2,
+    "steps_success": 0,
+    "failed_step": "text.simple_summary",
+    "reason": "text.simple_summary missing context field(s): data.clean_text. available: errors, inputs.file_path, inputs.output_path, logs. suggestions: text.clean_text_basic provides data.clean_text (needs data.raw_text)",
+    "missing_fields": [
+      "data.clean_text"
+    ],
+    "suggestions": [
+      {
+        "metacode_id": "text.clean_text_basic",
+        "name": "Clean Text Basic",
+        "category": "text",
+        "provides": [
+          "data.clean_text"
+        ],
+        "requires": [
+          "data.raw_text"
+        ],
+        "unmet_inputs": [
+          "data.raw_text"
+        ],
+        "ready": false,
+        "score": 9
+      }
+    ],
+    "outputs": {},
+    "context_keys": [
+      "errors",
+      "inputs.file_path",
+      "inputs.output_path",
+      "logs"
+    ],
+    "source_log": "failure_log"
   }
 ]

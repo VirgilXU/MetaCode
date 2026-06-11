@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import re
 import sqlite3
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -144,17 +145,36 @@ def dashboard_summary(
     failures = [run for run in runs if run["status"] == "failed"]
     successes = [run for run in runs if run["status"] == "success"]
     latest_run = runs[-1] if runs else None
+    generated_workflows = [
+        workflow for workflow in workflows if str(workflow["status_type"]).startswith("generated")
+    ]
+    intentional_failures = [
+        workflow for workflow in workflows if workflow["status_type"] == "intentional_failure"
+    ]
+    stable_workflows = [workflow for workflow in workflows if workflow["status_type"] == "stable"]
+    success_rate = round((len(successes) / len(runs)) * 100, 1) if runs else 0
+    current_stage = max((stage["stage_id"] for stage in stages), default=None)
     return {
-        "current_stage": max((stage["stage_id"] for stage in stages), default=None),
+        "current_stage": current_stage,
+        "stage_report_count": len(stages),
+        "stage_range": {
+            "first": min((stage["stage_id"] for stage in stages), default=None),
+            "last": current_stage,
+        },
         "metacode_count": reuse_summary["metacode_count"],
         "stable_workflow_count": reuse_summary["workflow_count"],
         "workflow_file_count": len(workflows),
+        "stable_workflow_file_count": len(stable_workflows),
+        "generated_workflow_count": len(generated_workflows),
+        "intentional_failure_workflow_count": len(intentional_failures),
         "run_count": len(runs),
         "success_run_count": len(successes),
         "failure_run_count": len(failures),
+        "success_rate": success_rate,
         "edge_count": graph_summary["edge_count"],
         "field_count": graph_summary["field_count"],
         "unresolved_field_count": len(graph_summary["unresolved_fields"]),
+        "last_exported_at": datetime.now(timezone.utc).isoformat(),
         "latest_run": latest_run,
     }
 
