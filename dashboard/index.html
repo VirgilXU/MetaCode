@@ -19,6 +19,7 @@
 
         <nav class="nav-list" aria-label="Dashboard sections">
           <a href="#overview" class="nav-link active">总览</a>
+          <a href="#api" class="nav-link">实时 API</a>
           <a href="#stages" class="nav-link">阶段</a>
           <a href="#workflows" class="nav-link">Workflow</a>
           <a href="#failures" class="nav-link">失败诊断</a>
@@ -41,6 +42,10 @@
             <p>跟踪阶段进度、复用能力、工作流质量、失败诊断和后续对比实验。</p>
           </div>
           <div class="topbar-actions">
+            <label class="toggle" title="自动刷新">
+              <input id="autoRefreshToggle" type="checkbox" checked />
+              <span>自动刷新</span>
+            </label>
             <button id="refreshBtn" class="icon-button" type="button" title="刷新数据" aria-label="刷新数据">
               <span aria-hidden="true">↻</span>
             </button>
@@ -83,6 +88,14 @@
             </div>
             <div class="gate-grid" id="stageGateGrid"></div>
           </article>
+        </section>
+
+        <section id="api" class="section">
+          <div class="section-heading">
+            <h2>实时 API</h2>
+            <span class="muted">Dashboard 优先读取本地 API，失败时回退到静态 JSON。</span>
+          </div>
+          <div class="api-grid" id="apiGrid"></div>
         </section>
 
         <section id="stages" class="section">

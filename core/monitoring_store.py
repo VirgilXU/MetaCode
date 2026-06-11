@@ -101,7 +101,7 @@ def collect_stage_reports(root: Path) -> list[dict[str, Any]]:
                 "updated_at": str(stat.st_mtime),
             }
         )
-    return stages
+    return sorted(stages, key=lambda stage: stage["stage_id"])
 
 
 def classify_workflow(path: Path, workflow: dict[str, Any]) -> str:

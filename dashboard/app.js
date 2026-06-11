@@ -1,4 +1,6 @@
-const EXPORT_BASE = "../monitoring/exports";
+const API_BASE = "/api";
+const STATIC_EXPORT_BASE = "../monitoring/exports";
+const REFRESH_INTERVAL_MS = 30000;
 
 const files = {
   summary: "dashboard_summary.json",
@@ -13,8 +15,12 @@ const files = {
 
 const state = {
   data: null,
+  dataSource: "unknown",
+  lastApiError: null,
+  lastRefreshAt: null,
   workflowFilter: "all",
   selectedWorkflowId: null,
+  refreshTimer: null,
 };
 
 const categoryColors = {
@@ -57,13 +63,13 @@ const comparisonItems = [
 const extensionItems = [
   {
     title: "后端 API",
-    body: "把 JSON 读取升级为服务接口，支持筛选、分页、权限和多项目。",
+    body: "已提供本地 API 服务，Dashboard 可以从接口读取监控数据。",
     tag: "Stage 10",
   },
   {
     title: "实时刷新",
-    body: "监听测试运行和导出时间，自动刷新观察台状态。",
-    tag: "Stage 10+",
+    body: "观察台每 30 秒自动刷新一次，也可以手动刷新。",
+    tag: "Stage 10",
   },
   {
     title: "对比实验采集器",
@@ -77,17 +83,52 @@ const extensionItems = [
   },
 ];
 
-async function loadJson(name) {
-  const response = await fetch(`${EXPORT_BASE}/${name}?t=${Date.now()}`);
-  if (!response.ok) throw new Error(`Failed to load ${name}`);
+async function loadJson(url) {
+  const response = await fetch(`${url}${url.includes("?") ? "&" : "?"}t=${Date.now()}`);
+  if (!response.ok) throw new Error(`Failed to load ${url}`);
   return response.json();
 }
 
-async function loadData() {
+async function loadFromApi() {
+  const payload = await loadJson(`${API_BASE}/monitoring`);
+  return {
+    summary: payload.summary,
+    runs: payload.runs,
+    failures: payload.failures,
+    stages: payload.stages,
+    workflows: payload.workflows,
+    reuse: payload.reuse,
+    graph: payload.graph,
+    graphSummary: payload.graphSummary,
+    api: payload.api,
+  };
+}
+
+async function loadFromStaticExports() {
   const entries = await Promise.all(
-    Object.entries(files).map(async ([key, file]) => [key, await loadJson(file)]),
+    Object.entries(files).map(async ([key, file]) => [key, await loadJson(`${STATIC_EXPORT_BASE}/${file}`)]),
   );
-  return Object.fromEntries(entries);
+  return {
+    ...Object.fromEntries(entries),
+    api: {
+      mode: "static-fallback",
+      version: "stage9-compatible",
+      endpoints: Object.values(files).map((file) => `${STATIC_EXPORT_BASE}/${file}`),
+    },
+  };
+}
+
+async function loadData() {
+  try {
+    const apiData = await loadFromApi();
+    state.dataSource = "api";
+    state.lastApiError = null;
+    return apiData;
+  } catch (error) {
+    state.dataSource = "static";
+    state.lastApiError = error.message;
+    return loadFromStaticExports();
+  }
 }
 
 function escapeHtml(value) {
@@ -131,10 +172,15 @@ function fileName(path) {
   return String(path).split(/[\\/]/).pop();
 }
 
+function isAutoRefreshEnabled() {
+  return document.querySelector("#autoRefreshToggle")?.checked ?? true;
+}
+
 function setHealth(summary) {
   const pill = document.querySelector("#healthPill");
-  const healthy = summary.unresolved_field_count === 0 && summary.current_stage >= 9;
-  pill.textContent = healthy ? "Stage 9 Ready" : "Needs Review";
+  const healthy = summary.unresolved_field_count === 0 && summary.current_stage >= 10;
+  const source = state.dataSource === "api" ? "API" : "Static";
+  pill.textContent = healthy ? `Stage 10 ${source}` : "Needs Review";
   pill.className = `status-pill ${healthy ? "ok" : "warn"}`;
 }
 
@@ -197,8 +243,8 @@ function renderStageGates(summary) {
     {
       label: "阶段报告",
       value: `${summary.stage_report_count ?? 0} 份`,
-      ok: summary.current_stage >= 9,
-      note: "第九阶段报告进入监控范围",
+      ok: summary.current_stage >= 10,
+      note: "第十阶段报告进入监控范围",
     },
     {
       label: "字段完整性",
@@ -207,16 +253,16 @@ function renderStageGates(summary) {
       note: "能力图谱字段全部可解析",
     },
     {
-      label: "运行样本",
-      value: `${formatNumber(summary.run_count)} 条`,
-      ok: summary.run_count >= 100,
-      note: "有足够样本观察趋势",
+      label: "本地 API",
+      value: state.dataSource === "api" ? "已连接" : "静态回退",
+      ok: state.dataSource === "api",
+      note: state.dataSource === "api" ? "Dashboard 正在读取 API" : "API 未启动时仍可读取 JSON",
     },
     {
-      label: "扩展窗口",
-      value: "已预留",
-      ok: true,
-      note: "对比实验、实时刷新、API 可接入",
+      label: "自动刷新",
+      value: isAutoRefreshEnabled() ? "30 秒" : "已暂停",
+      ok: isAutoRefreshEnabled(),
+      note: "观察台可持续刷新当前项目状态",
     },
   ];
 
@@ -229,6 +275,49 @@ function renderStageGates(summary) {
           <div>${escapeHtml(gate.value)}</div>
           <div class="small-label">${escapeHtml(gate.note)}</div>
         </div>
+      `,
+    )
+    .join("");
+}
+
+function renderApiStatus() {
+  const api = state.data?.api || {};
+  const endpoints = api.endpoints || [];
+  const cards = [
+    {
+      label: "数据模式",
+      value: state.dataSource === "api" ? "API 服务" : "静态 JSON",
+      note: state.dataSource === "api" ? "实时读取 /api/monitoring" : state.lastApiError || "读取 monitoring/exports",
+      tag: state.dataSource === "api" ? "green" : "amber",
+    },
+    {
+      label: "API 版本",
+      value: api.version || "-",
+      note: "Stage 10 本地服务",
+      tag: "blue",
+    },
+    {
+      label: "刷新策略",
+      value: isAutoRefreshEnabled() ? "30 秒自动" : "手动刷新",
+      note: `最近刷新 ${formatTime(state.lastRefreshAt)}`,
+      tag: isAutoRefreshEnabled() ? "green" : "amber",
+    },
+    {
+      label: "可用端点",
+      value: `${endpoints.length} 个`,
+      note: endpoints.slice(0, 3).join("  "),
+      tag: "teal",
+    },
+  ];
+
+  document.querySelector("#apiGrid").innerHTML = cards
+    .map(
+      (card) => `
+        <article class="api-card">
+          <div class="tag ${card.tag}">${escapeHtml(card.label)}</div>
+          <div class="value-strong">${escapeHtml(card.value)}</div>
+          <code>${escapeHtml(card.note)}</code>
+        </article>
       `,
     )
     .join("");
@@ -483,6 +572,7 @@ function renderAll() {
   renderRunStatus(summary);
   renderLatestRun(summary);
   renderStageGates(summary);
+  renderApiStatus();
   renderStages();
   renderWorkflows();
   renderFailures();
@@ -495,6 +585,13 @@ function renderAll() {
 
 function bindEvents() {
   document.querySelector("#refreshBtn").addEventListener("click", refresh);
+  document.querySelector("#autoRefreshToggle").addEventListener("change", () => {
+    if (state.data) {
+      renderStageGates(state.data.summary);
+      renderApiStatus();
+    }
+  });
+
   document.querySelectorAll("#workflowFilters button").forEach((button) => {
     button.addEventListener("click", () => {
       document.querySelectorAll("#workflowFilters button").forEach((item) => item.classList.remove("selected"));
@@ -520,6 +617,7 @@ async function refresh() {
   pill.className = "status-pill";
   try {
     state.data = await loadData();
+    state.lastRefreshAt = new Date().toISOString();
     renderAll();
   } catch (error) {
     pill.textContent = "数据加载失败";
@@ -528,5 +626,17 @@ async function refresh() {
   }
 }
 
+function startAutoRefresh() {
+  if (state.refreshTimer) {
+    clearInterval(state.refreshTimer);
+  }
+  state.refreshTimer = setInterval(() => {
+    if (isAutoRefreshEnabled()) {
+      refresh();
+    }
+  }, REFRESH_INTERVAL_MS);
+}
+
 bindEvents();
 refresh();
+startAutoRefresh();
