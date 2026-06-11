@@ -100,6 +100,7 @@ async function loadFromApi() {
     reuse: payload.reuse,
     graph: payload.graph,
     graphSummary: payload.graphSummary,
+    diagnostics: payload.diagnostics,
     api: payload.api,
   };
 }
@@ -108,8 +109,10 @@ async function loadFromStaticExports() {
   const entries = await Promise.all(
     Object.entries(files).map(async ([key, file]) => [key, await loadJson(`${STATIC_EXPORT_BASE}/${file}`)]),
   );
+  const data = Object.fromEntries(entries);
   return {
-    ...Object.fromEntries(entries),
+    ...data,
+    diagnostics: buildDiagnostics(data.failures || []),
     api: {
       mode: "static-fallback",
       version: "stage9-compatible",
@@ -129,6 +132,120 @@ async function loadData() {
     state.lastApiError = error.message;
     return loadFromStaticExports();
   }
+}
+
+function sortedRows(counter, countKey = "failure_count") {
+  return Object.values(counter).sort((left, right) => {
+    const countDelta = (right[countKey] || 0) - (left[countKey] || 0);
+    if (countDelta !== 0) return countDelta;
+    return String(left.id || left.field || "").localeCompare(String(right.id || right.field || ""));
+  });
+}
+
+function buildDiagnostics(failures) {
+  const byField = {};
+  const byWorkflow = {};
+  const byMetacode = {};
+  let missingFieldMentions = 0;
+  let suggestionCount = 0;
+  let readySuggestionCount = 0;
+
+  failures.forEach((failure) => {
+    const workflowId = failure.workflow_id || "unknown";
+    const failedStep = failure.failed_step || "unknown";
+    const reason = failure.reason || "";
+    const missingFields = failure.missing_fields || [];
+    const suggestions = failure.suggestions || [];
+
+    const workflowRow = byWorkflow[workflowId] || {
+      id: workflowId,
+      workflow_id: workflowId,
+      failure_count: 0,
+      failed_steps: {},
+      missing_fields: {},
+      suggested_metacodes: {},
+      ready_suggestion_count: 0,
+      latest_reason: "",
+    };
+    workflowRow.failure_count += 1;
+    workflowRow.failed_steps[failedStep] = (workflowRow.failed_steps[failedStep] || 0) + 1;
+    workflowRow.latest_reason = reason;
+    byWorkflow[workflowId] = workflowRow;
+
+    missingFields.forEach((field) => {
+      missingFieldMentions += 1;
+      workflowRow.missing_fields[field] = (workflowRow.missing_fields[field] || 0) + 1;
+      const fieldRow = byField[field] || {
+        field,
+        failure_count: 0,
+        workflows: {},
+        suggested_metacodes: {},
+        ready_suggestion_count: 0,
+        latest_reason: "",
+      };
+      fieldRow.failure_count += 1;
+      fieldRow.workflows[workflowId] = (fieldRow.workflows[workflowId] || 0) + 1;
+      fieldRow.latest_reason = reason;
+      byField[field] = fieldRow;
+    });
+
+    suggestions.forEach((suggestion) => {
+      const metacodeId = suggestion.metacode_id || "unknown";
+      const ready = Boolean(suggestion.ready);
+      suggestionCount += 1;
+      if (ready) {
+        readySuggestionCount += 1;
+        workflowRow.ready_suggestion_count += 1;
+      }
+      workflowRow.suggested_metacodes[metacodeId] = (workflowRow.suggested_metacodes[metacodeId] || 0) + 1;
+      const metacodeRow = byMetacode[metacodeId] || {
+        id: metacodeId,
+        metacode_id: metacodeId,
+        suggestion_count: 0,
+        ready_count: 0,
+        workflows: {},
+        missing_fields: {},
+      };
+      metacodeRow.suggestion_count += 1;
+      if (ready) metacodeRow.ready_count += 1;
+      metacodeRow.workflows[workflowId] = (metacodeRow.workflows[workflowId] || 0) + 1;
+      missingFields.forEach((field) => {
+        metacodeRow.missing_fields[field] = (metacodeRow.missing_fields[field] || 0) + 1;
+        if (byField[field]) {
+          byField[field].suggested_metacodes[metacodeId] = (byField[field].suggested_metacodes[metacodeId] || 0) + 1;
+          if (ready) byField[field].ready_suggestion_count += 1;
+        }
+      });
+      byMetacode[metacodeId] = metacodeRow;
+    });
+  });
+
+  const byFieldRows = sortedRows(byField);
+  const byWorkflowRows = sortedRows(byWorkflow);
+  const byMetacodeRows = Object.values(byMetacode).sort((left, right) => {
+    const countDelta = (right.suggestion_count || 0) - (left.suggestion_count || 0);
+    if (countDelta !== 0) return countDelta;
+    return String(left.metacode_id).localeCompare(String(right.metacode_id));
+  });
+
+  return {
+    summary: {
+      failure_count: failures.length,
+      workflow_failure_count: byWorkflowRows.length,
+      missing_field_mentions: missingFieldMentions,
+      unique_missing_field_count: byFieldRows.length,
+      suggestion_count: suggestionCount,
+      ready_suggestion_count: readySuggestionCount,
+      top_field: byFieldRows[0] || null,
+      top_workflow: byWorkflowRows[0] || null,
+      top_metacode: byMetacodeRows[0] || null,
+      repair_success_rate: null,
+      repair_success_rate_status: "reserved",
+    },
+    by_field: byFieldRows,
+    by_workflow: byWorkflowRows,
+    by_metacode: byMetacodeRows,
+  };
 }
 
 function escapeHtml(value) {
@@ -178,9 +295,9 @@ function isAutoRefreshEnabled() {
 
 function setHealth(summary) {
   const pill = document.querySelector("#healthPill");
-  const healthy = summary.unresolved_field_count === 0 && summary.current_stage >= 10;
+  const healthy = summary.unresolved_field_count === 0 && summary.current_stage >= 11;
   const source = state.dataSource === "api" ? "API" : "Static";
-  pill.textContent = healthy ? `Stage 10 ${source}` : "Needs Review";
+  pill.textContent = healthy ? `Stage 11 ${source}` : "Needs Review";
   pill.className = `status-pill ${healthy ? "ok" : "warn"}`;
 }
 
@@ -243,8 +360,8 @@ function renderStageGates(summary) {
     {
       label: "阶段报告",
       value: `${summary.stage_report_count ?? 0} 份`,
-      ok: summary.current_stage >= 10,
-      note: "第十阶段报告进入监控范围",
+      ok: summary.current_stage >= 11,
+      note: "第十一阶段报告进入监控范围",
     },
     {
       label: "字段完整性",
@@ -293,7 +410,7 @@ function renderApiStatus() {
     {
       label: "API 版本",
       value: api.version || "-",
-      note: "Stage 10 本地服务",
+      note: "Stage 11 本地服务",
       tag: "blue",
     },
     {
@@ -321,6 +438,84 @@ function renderApiStatus() {
       `,
     )
     .join("");
+}
+
+function topKeys(record, limit = 3) {
+  return Object.entries(record || {})
+    .sort((left, right) => right[1] - left[1] || left[0].localeCompare(right[0]))
+    .slice(0, limit)
+    .map(([key, count]) => `${key} (${count})`)
+    .join(", ");
+}
+
+function renderDiagnosticMetrics() {
+  const diagnostics = state.data.diagnostics || buildDiagnostics(state.data.failures || []);
+  const summary = diagnostics.summary || {};
+  const metrics = [
+    ["失败记录", summary.failure_count, "进入诊断聚合的失败样本"],
+    ["影响 Workflow", summary.workflow_failure_count, "出现过失败的 workflow"],
+    ["缺失字段", summary.unique_missing_field_count, `${summary.missing_field_mentions || 0} 次字段缺口`],
+    ["推荐能力", summary.suggestion_count, `${summary.ready_suggestion_count || 0} 次 ready`],
+  ];
+
+  document.querySelector("#diagnosticMetricGrid").innerHTML = metrics
+    .map(
+      ([label, value, note]) => `
+        <article class="metric-card">
+          <div class="metric-label">${escapeHtml(label)}</div>
+          <div class="metric-value">${formatNumber(value)}</div>
+          <div class="metric-note">${escapeHtml(note)}</div>
+        </article>
+      `,
+    )
+    .join("");
+}
+
+function renderDiagnosticList(selector, rows, renderer) {
+  const target = document.querySelector(selector);
+  if (!rows?.length) {
+    target.innerHTML = `<div class="empty-state">暂无诊断数据</div>`;
+    return;
+  }
+  target.innerHTML = rows.slice(0, 6).map(renderer).join("");
+}
+
+function renderDiagnostics() {
+  const diagnostics = state.data.diagnostics || buildDiagnostics(state.data.failures || []);
+  renderDiagnosticMetrics();
+
+  renderDiagnosticList("#fieldDiagnostics", diagnostics.by_field, (row) => `
+    <div class="diagnostic-row">
+      <div class="diagnostic-row-head">
+        <div class="diagnostic-row-title">${escapeHtml(row.field)}</div>
+        <span class="tag red">${formatNumber(row.failure_count)}</span>
+      </div>
+      <div class="diagnostic-row-meta">Workflows: ${escapeHtml(topKeys(row.workflows) || "-")}</div>
+      <div class="diagnostic-row-meta">Suggested: ${escapeHtml(topKeys(row.suggested_metacodes) || "-")}</div>
+    </div>
+  `);
+
+  renderDiagnosticList("#workflowDiagnostics", diagnostics.by_workflow, (row) => `
+    <div class="diagnostic-row">
+      <div class="diagnostic-row-head">
+        <div class="diagnostic-row-title">${escapeHtml(row.workflow_id)}</div>
+        <span class="tag red">${formatNumber(row.failure_count)}</span>
+      </div>
+      <div class="diagnostic-row-meta">Missing: ${escapeHtml(topKeys(row.missing_fields) || "-")}</div>
+      <div class="diagnostic-row-meta">Steps: ${escapeHtml(topKeys(row.failed_steps) || "-")}</div>
+    </div>
+  `);
+
+  renderDiagnosticList("#metacodeDiagnostics", diagnostics.by_metacode, (row) => `
+    <div class="diagnostic-row">
+      <div class="diagnostic-row-head">
+        <div class="diagnostic-row-title">${escapeHtml(row.metacode_id)}</div>
+        <span class="tag green">${formatNumber(row.ready_count)} ready</span>
+      </div>
+      <div class="diagnostic-row-meta">Suggestions: ${formatNumber(row.suggestion_count)}</div>
+      <div class="diagnostic-row-meta">Fields: ${escapeHtml(topKeys(row.missing_fields) || "-")}</div>
+    </div>
+  `);
 }
 
 function workflowTypeLabel(type) {
@@ -573,6 +768,7 @@ function renderAll() {
   renderLatestRun(summary);
   renderStageGates(summary);
   renderApiStatus();
+  renderDiagnostics();
   renderStages();
   renderWorkflows();
   renderFailures();

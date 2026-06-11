@@ -38,9 +38,11 @@ def load_export(root: Path, key: str) -> Any:
 
 def load_monitoring_bundle(root: Path) -> dict[str, Any]:
     bundle = {key: load_export(root, key) for key in EXPORT_FILES}
+    diagnostics = build_diagnostics(bundle["failures"])
+    bundle["diagnostics"] = diagnostics
     bundle["api"] = {
         "mode": "api",
-        "version": "stage10",
+        "version": "stage11",
         "endpoints": [
             "/api/status",
             "/api/monitoring",
@@ -51,6 +53,10 @@ def load_monitoring_bundle(root: Path) -> dict[str, Any]:
             "/api/reuse-summary",
             "/api/capability-graph",
             "/api/reports",
+            "/api/diagnostics/summary",
+            "/api/diagnostics/by-field",
+            "/api/diagnostics/by-workflow",
+            "/api/diagnostics/by-metacode",
             "/api/export-monitoring-data",
         ],
     }
@@ -93,6 +99,123 @@ def filter_workflows(workflows: list[dict[str, Any]], query: dict[str, list[str]
     return [workflow for workflow in workflows if workflow.get("status_type") == status_type]
 
 
+def sorted_rows(counter: dict[str, dict[str, Any]], count_key: str = "failure_count") -> list[dict[str, Any]]:
+    return sorted(counter.values(), key=lambda row: (-row[count_key], str(row.get("id") or row.get("field") or "")))
+
+
+def build_diagnostics(failures: list[dict[str, Any]]) -> dict[str, Any]:
+    by_field: dict[str, dict[str, Any]] = {}
+    by_workflow: dict[str, dict[str, Any]] = {}
+    by_metacode: dict[str, dict[str, Any]] = {}
+    missing_field_mentions = 0
+    suggestion_count = 0
+    ready_suggestion_count = 0
+
+    for failure in failures:
+        workflow_id = failure.get("workflow_id") or "unknown"
+        failed_step = failure.get("failed_step") or "unknown"
+        reason = failure.get("reason") or ""
+        missing_fields = failure.get("missing_fields") or []
+        suggestions = failure.get("suggestions") or []
+
+        workflow_row = by_workflow.setdefault(
+            workflow_id,
+            {
+                "id": workflow_id,
+                "workflow_id": workflow_id,
+                "failure_count": 0,
+                "failed_steps": {},
+                "missing_fields": {},
+                "suggested_metacodes": {},
+                "ready_suggestion_count": 0,
+                "latest_reason": "",
+            },
+        )
+        workflow_row["failure_count"] += 1
+        workflow_row["failed_steps"][failed_step] = workflow_row["failed_steps"].get(failed_step, 0) + 1
+        workflow_row["latest_reason"] = reason
+
+        for field in missing_fields:
+            missing_field_mentions += 1
+            workflow_row["missing_fields"][field] = workflow_row["missing_fields"].get(field, 0) + 1
+            field_row = by_field.setdefault(
+                field,
+                {
+                    "field": field,
+                    "failure_count": 0,
+                    "workflows": {},
+                    "suggested_metacodes": {},
+                    "ready_suggestion_count": 0,
+                    "latest_reason": "",
+                },
+            )
+            field_row["failure_count"] += 1
+            field_row["workflows"][workflow_id] = field_row["workflows"].get(workflow_id, 0) + 1
+            field_row["latest_reason"] = reason
+
+        for suggestion in suggestions:
+            metacode_id = suggestion.get("metacode_id") or "unknown"
+            ready = bool(suggestion.get("ready"))
+            suggestion_count += 1
+            if ready:
+                ready_suggestion_count += 1
+                workflow_row["ready_suggestion_count"] += 1
+
+            workflow_row["suggested_metacodes"][metacode_id] = (
+                workflow_row["suggested_metacodes"].get(metacode_id, 0) + 1
+            )
+
+            metacode_row = by_metacode.setdefault(
+                metacode_id,
+                {
+                    "id": metacode_id,
+                    "metacode_id": metacode_id,
+                    "suggestion_count": 0,
+                    "ready_count": 0,
+                    "workflows": {},
+                    "missing_fields": {},
+                },
+            )
+            metacode_row["suggestion_count"] += 1
+            if ready:
+                metacode_row["ready_count"] += 1
+            metacode_row["workflows"][workflow_id] = metacode_row["workflows"].get(workflow_id, 0) + 1
+            for field in missing_fields:
+                metacode_row["missing_fields"][field] = metacode_row["missing_fields"].get(field, 0) + 1
+                if field in by_field:
+                    by_field[field]["suggested_metacodes"][metacode_id] = (
+                        by_field[field]["suggested_metacodes"].get(metacode_id, 0) + 1
+                    )
+                    if ready:
+                        by_field[field]["ready_suggestion_count"] += 1
+
+    field_rows = sorted_rows(by_field)
+    workflow_rows = sorted_rows(by_workflow)
+    metacode_rows = sorted(
+        by_metacode.values(),
+        key=lambda row: (-row["suggestion_count"], -row["ready_count"], row["metacode_id"]),
+    )
+    summary = {
+        "failure_count": len(failures),
+        "workflow_failure_count": len(by_workflow),
+        "missing_field_mentions": missing_field_mentions,
+        "unique_missing_field_count": len(by_field),
+        "suggestion_count": suggestion_count,
+        "ready_suggestion_count": ready_suggestion_count,
+        "top_field": field_rows[0] if field_rows else None,
+        "top_workflow": workflow_rows[0] if workflow_rows else None,
+        "top_metacode": metacode_rows[0] if metacode_rows else None,
+        "repair_success_rate": None,
+        "repair_success_rate_status": "reserved",
+    }
+    return {
+        "summary": summary,
+        "by_field": field_rows,
+        "by_workflow": workflow_rows,
+        "by_metacode": metacode_rows,
+    }
+
+
 def report_rows(root: Path) -> list[dict[str, Any]]:
     stages = load_export(root, "stages")
     return [
@@ -115,7 +238,7 @@ def api_response(root: Path, method: str, path: str, query: dict[str, list[str]]
         return HTTPStatus.OK, {
             "status": "ok",
             "service": "MetaCode Observatory API",
-            "version": "stage10",
+            "version": "stage11",
             "current_stage": summary.get("current_stage"),
             "last_exported_at": summary.get("last_exported_at"),
             "summary": summary,
@@ -149,6 +272,18 @@ def api_response(root: Path, method: str, path: str, query: dict[str, list[str]]
 
     if method == "GET" and path == "/api/reports":
         return HTTPStatus.OK, report_rows(root)
+
+    if method == "GET" and path == "/api/diagnostics/summary":
+        return HTTPStatus.OK, build_diagnostics(load_export(root, "failures"))["summary"]
+
+    if method == "GET" and path == "/api/diagnostics/by-field":
+        return HTTPStatus.OK, build_diagnostics(load_export(root, "failures"))["by_field"]
+
+    if method == "GET" and path == "/api/diagnostics/by-workflow":
+        return HTTPStatus.OK, build_diagnostics(load_export(root, "failures"))["by_workflow"]
+
+    if method == "GET" and path == "/api/diagnostics/by-metacode":
+        return HTTPStatus.OK, build_diagnostics(load_export(root, "failures"))["by_metacode"]
 
     if method == "POST" and path == "/api/export-monitoring-data":
         payload = export_monitoring_data(root)

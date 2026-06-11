@@ -380,6 +380,52 @@ h3 {
   overflow-wrap: anywhere;
 }
 
+.diagnostic-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.diagnostic-layout {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.diagnostic-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.diagnostic-row {
+  display: grid;
+  gap: 7px;
+  padding: 11px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfcfd;
+}
+
+.diagnostic-row-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.diagnostic-row-title {
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+
+.diagnostic-row-meta {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
 .gate-item {
   min-height: 94px;
   border: 1px solid var(--line);
@@ -605,6 +651,7 @@ tbody tr.selected {
 @media (max-width: 1160px) {
   .metric-grid,
   .failure-grid,
+  .diagnostic-metrics,
   .comparison-grid,
   .extension-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -612,6 +659,7 @@ tbody tr.selected {
 
   .two-column,
   .workflow-layout,
+  .diagnostic-layout,
   .graph-layout {
     grid-template-columns: 1fr;
   }
@@ -640,6 +688,7 @@ tbody tr.selected {
 
   .metric-grid,
   .failure-grid,
+  .diagnostic-metrics,
   .comparison-grid,
   .extension-grid,
   .timeline,

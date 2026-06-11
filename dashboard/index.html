@@ -20,6 +20,7 @@
         <nav class="nav-list" aria-label="Dashboard sections">
           <a href="#overview" class="nav-link active">总览</a>
           <a href="#api" class="nav-link">实时 API</a>
+          <a href="#diagnostics" class="nav-link">诊断工作台</a>
           <a href="#stages" class="nav-link">阶段</a>
           <a href="#workflows" class="nav-link">Workflow</a>
           <a href="#failures" class="nav-link">失败诊断</a>
@@ -96,6 +97,37 @@
             <span class="muted">Dashboard 优先读取本地 API，失败时回退到静态 JSON。</span>
           </div>
           <div class="api-grid" id="apiGrid"></div>
+        </section>
+
+        <section id="diagnostics" class="section">
+          <div class="section-heading">
+            <h2>诊断工作台</h2>
+            <span class="muted">按字段、Workflow、metacode 推荐聚合失败原因。</span>
+          </div>
+          <div class="diagnostic-metrics" id="diagnosticMetricGrid"></div>
+          <div class="diagnostic-layout">
+            <article class="panel">
+              <div class="panel-head">
+                <h3>缺失字段</h3>
+                <span class="small-label">missing_fields</span>
+              </div>
+              <div class="diagnostic-list" id="fieldDiagnostics"></div>
+            </article>
+            <article class="panel">
+              <div class="panel-head">
+                <h3>失败 Workflow</h3>
+                <span class="small-label">workflow</span>
+              </div>
+              <div class="diagnostic-list" id="workflowDiagnostics"></div>
+            </article>
+            <article class="panel">
+              <div class="panel-head">
+                <h3>推荐 metacode</h3>
+                <span class="small-label">recommendation</span>
+              </div>
+              <div class="diagnostic-list" id="metacodeDiagnostics"></div>
+            </article>
+          </div>
         </section>
 
         <section id="stages" class="section">
