@@ -1,13 +1,16 @@
 from __future__ import annotations
 
 import json
+import uuid
 from http import HTTPStatus
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from typing import Any
 from urllib.parse import parse_qs, urlparse
 
+from core.path_planner import plan_workflow_fix
 from core.monitoring_store import export_monitoring_data
+from core.workflow_fixer import fix_workflow
 
 
 EXPORT_FILES = {
@@ -16,6 +19,9 @@ EXPORT_FILES = {
     "failures": "failures.json",
     "stages": "stages.json",
     "workflows": "workflow_graph.json",
+    "comparison": "comparison_experiments.json",
+    "generatedReviews": "generated_workflow_reviews.json",
+    "capabilityQuality": "capability_quality.json",
     "repairs": "repair_metrics.json",
     "repairEvents": "repair_events.json",
     "reuse": "reuse_summary.json",
@@ -44,13 +50,19 @@ def load_monitoring_bundle(root: Path) -> dict[str, Any]:
     bundle["diagnostics"] = diagnostics
     bundle["api"] = {
         "mode": "api",
-        "version": "stage13",
+        "version": "stage18",
         "endpoints": [
             "/api/status",
             "/api/monitoring",
             "/api/runs",
             "/api/failures",
             "/api/workflows",
+            "/api/comparison-experiments/summary",
+            "/api/comparison-experiments",
+            "/api/generated-workflow-reviews/summary",
+            "/api/generated-workflow-reviews",
+            "/api/capability-quality/summary",
+            "/api/capability-quality",
             "/api/repairs/summary",
             "/api/repairs/by-strategy",
             "/api/repairs/by-workflow",
@@ -60,6 +72,8 @@ def load_monitoring_bundle(root: Path) -> dict[str, Any]:
             "/api/repair-events/by-strategy",
             "/api/repair-events/by-workflow",
             "/api/repair-events/recent",
+            "POST /api/repair/fix-workflow",
+            "POST /api/repair/plan-workflow",
             "/api/stages",
             "/api/reuse-summary",
             "/api/capability-graph",
@@ -72,6 +86,53 @@ def load_monitoring_bundle(root: Path) -> dict[str, Any]:
         ],
     }
     return bundle
+
+
+def resolve_workflow_path(root: Path, payload: dict[str, Any]) -> Path:
+    raw_path = payload.get("workflow_path") or payload.get("path")
+    if not raw_path:
+        raise ValueError("workflow_path is required")
+    workflow_path = Path(str(raw_path))
+    if not workflow_path.is_absolute():
+        workflow_path = root / workflow_path
+    workflow_path = workflow_path.resolve()
+    workflows_root = (root / "workflows").resolve()
+    if workflow_path.suffix not in {".yaml", ".yml"}:
+        raise ValueError("workflow_path must point to a YAML workflow")
+    if workflows_root != workflow_path and workflows_root not in workflow_path.parents:
+        raise ValueError("workflow_path must stay under workflows/")
+    if not workflow_path.exists():
+        raise ValueError(f"workflow not found: {workflow_path}")
+    return workflow_path
+
+
+def find_repair_event(payload: dict[str, Any], repair_id: str) -> dict[str, Any] | None:
+    for event in payload.get("repair_events", {}).get("events", []):
+        if event.get("repair_id") == repair_id:
+            return event
+    return None
+
+
+def trigger_repair(root: Path, payload: dict[str, Any], strategy: str) -> dict[str, Any]:
+    workflow_path = resolve_workflow_path(root, payload)
+    repair_id = f"repair-action-{uuid.uuid4()}"
+    if strategy == "fixed":
+        result = fix_workflow(root, workflow_path, repair_id=repair_id)
+    elif strategy == "planned":
+        result = plan_workflow_fix(root, workflow_path, repair_id=repair_id)
+    else:
+        raise ValueError(f"unknown repair strategy: {strategy}")
+
+    monitoring_payload = export_monitoring_data(root)
+    return {
+        "status": "repair_triggered",
+        "strategy": strategy,
+        "repair_id": repair_id,
+        "workflow_path": str(workflow_path),
+        "result": result,
+        "repair_event": find_repair_event(monitoring_payload, repair_id),
+        "summary": monitoring_payload["dashboard_summary"],
+    }
 
 
 def to_int(value: str | None, default: int, minimum: int = 1, maximum: int = 1000) -> int:
@@ -252,13 +313,19 @@ def report_rows(root: Path) -> list[dict[str, Any]]:
     ]
 
 
-def api_response(root: Path, method: str, path: str, query: dict[str, list[str]]) -> tuple[int, Any]:
+def api_response(
+    root: Path,
+    method: str,
+    path: str,
+    query: dict[str, list[str]],
+    payload: dict[str, Any] | None = None,
+) -> tuple[int, Any]:
     if method == "GET" and path == "/api/status":
         summary = load_export(root, "summary")
         return HTTPStatus.OK, {
             "status": "ok",
             "service": "MetaCode Observatory API",
-            "version": "stage13",
+            "version": "stage18",
             "current_stage": summary.get("current_stage"),
             "last_exported_at": summary.get("last_exported_at"),
             "summary": summary,
@@ -277,6 +344,24 @@ def api_response(root: Path, method: str, path: str, query: dict[str, list[str]]
 
     if method == "GET" and path == "/api/workflows":
         return HTTPStatus.OK, filter_workflows(load_export(root, "workflows"), query)
+
+    if method == "GET" and path == "/api/comparison-experiments/summary":
+        return HTTPStatus.OK, load_export(root, "comparison")["summary"]
+
+    if method == "GET" and path == "/api/comparison-experiments":
+        return HTTPStatus.OK, load_export(root, "comparison")["records"]
+
+    if method == "GET" and path == "/api/generated-workflow-reviews/summary":
+        return HTTPStatus.OK, load_export(root, "generatedReviews")["summary"]
+
+    if method == "GET" and path == "/api/generated-workflow-reviews":
+        return HTTPStatus.OK, load_export(root, "generatedReviews")["records"]
+
+    if method == "GET" and path == "/api/capability-quality/summary":
+        return HTTPStatus.OK, load_export(root, "capabilityQuality")["summary"]
+
+    if method == "GET" and path == "/api/capability-quality":
+        return HTTPStatus.OK, load_export(root, "capabilityQuality")["records"]
 
     if method == "GET" and path == "/api/repairs/summary":
         return HTTPStatus.OK, load_export(root, "repairs")["summary"]
@@ -346,6 +431,18 @@ def api_response(root: Path, method: str, path: str, query: dict[str, list[str]]
             "summary": payload["dashboard_summary"],
         }
 
+    if method == "POST" and path == "/api/repair/fix-workflow":
+        try:
+            return HTTPStatus.OK, trigger_repair(root, payload or {}, "fixed")
+        except ValueError as error:
+            return HTTPStatus.BAD_REQUEST, {"status": "bad_request", "message": str(error)}
+
+    if method == "POST" and path == "/api/repair/plan-workflow":
+        try:
+            return HTTPStatus.OK, trigger_repair(root, payload or {}, "planned")
+        except ValueError as error:
+            return HTTPStatus.BAD_REQUEST, {"status": "bad_request", "message": str(error)}
+
     return HTTPStatus.NOT_FOUND, {
         "status": "not_found",
         "path": path,
@@ -380,15 +477,24 @@ def create_handler(root: Path) -> type[SimpleHTTPRequestHandler]:
             parsed = urlparse(self.path)
             if parsed.path.startswith("/api/"):
                 length = int(self.headers.get("Content-Length", "0"))
+                payload: dict[str, Any] | None = None
                 if length:
-                    self.rfile.read(length)
-                self.handle_api("POST", parsed.path, parse_qs(parsed.query))
+                    raw_body = self.rfile.read(length)
+                    if raw_body:
+                        payload = json.loads(raw_body.decode("utf-8"))
+                self.handle_api("POST", parsed.path, parse_qs(parsed.query), payload)
                 return
             self.send_error(HTTPStatus.NOT_FOUND, "Not found")
 
-        def handle_api(self, method: str, path: str, query: dict[str, list[str]]) -> None:
+        def handle_api(
+            self,
+            method: str,
+            path: str,
+            query: dict[str, list[str]],
+            payload: dict[str, Any] | None = None,
+        ) -> None:
             try:
-                status, payload = api_response(project_root, method, path, query)
+                status, payload = api_response(project_root, method, path, query, payload)
             except FileNotFoundError as error:
                 status, payload = HTTPStatus.SERVICE_UNAVAILABLE, {
                     "status": "missing_export",

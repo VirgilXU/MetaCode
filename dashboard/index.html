@@ -23,10 +23,12 @@
           <a href="#diagnostics" class="nav-link">诊断工作台</a>
           <a href="#repairs" class="nav-link">修复闭环</a>
           <a href="#repair-events" class="nav-link">事件链</a>
+          <a href="#reviews" class="nav-link">修复审核</a>
           <a href="#stages" class="nav-link">阶段</a>
           <a href="#workflows" class="nav-link">Workflow</a>
           <a href="#failures" class="nav-link">失败诊断</a>
           <a href="#graph" class="nav-link">能力图谱</a>
+          <a href="#quality" class="nav-link">能力质量</a>
           <a href="#comparison" class="nav-link">对比实验</a>
           <a href="#reports" class="nav-link">报告中心</a>
           <a href="#extensions" class="nav-link">扩展窗口</a>
@@ -172,10 +174,29 @@
           <div class="event-metrics" id="repairEventMetricGrid"></div>
           <article class="panel">
             <div class="panel-head">
+              <h3>一键修复入口</h3>
+              <span class="small-label">local repair action</span>
+            </div>
+            <div class="repair-action-panel">
+              <select id="repairWorkflowSelect" aria-label="选择待修复 Workflow"></select>
+              <button id="fixWorkflowBtn" class="action-button" type="button">Fixed</button>
+              <button id="planWorkflowBtn" class="action-button secondary" type="button">Planned</button>
+              <span id="repairActionStatus" class="muted">仅 API 模式可触发。</span>
+            </div>
+          </article>
+          <article class="panel">
+            <div class="panel-head">
               <h3>最新事件链</h3>
               <span class="small-label">failure / suggestion / generated / verification</span>
             </div>
             <div id="repairEventLatest" class="detail-block"></div>
+          </article>
+          <article class="panel">
+            <div class="panel-head">
+              <h3>修复详情</h3>
+              <span class="small-label">selected event</span>
+            </div>
+            <div id="repairEventDetail" class="detail-block"></div>
           </article>
           <div class="event-layout">
             <article class="panel">
@@ -208,6 +229,21 @@
             <span class="muted" id="stageRange">Stage 2 - Stage 9</span>
           </div>
           <div class="timeline" id="stageTimeline"></div>
+        </section>
+
+        <section id="reviews" class="section">
+          <div class="section-heading">
+            <h2>修复审核</h2>
+            <span class="muted">generated workflow 的审核状态和提升就绪度。</span>
+          </div>
+          <div class="repair-metrics" id="reviewMetricGrid"></div>
+          <article class="panel">
+            <div class="panel-head">
+              <h3>Generated Workflow 审核</h3>
+              <span class="small-label">review / promotion</span>
+            </div>
+            <div class="repair-list" id="reviewWorkflowList"></div>
+          </article>
         </section>
 
         <section id="workflows" class="section">
@@ -286,10 +322,25 @@
           </div>
         </section>
 
+        <section id="quality" class="section">
+          <div class="section-heading">
+            <h2>能力质量</h2>
+            <span class="muted">按复用、桥接、修复贡献和失败关联评分。</span>
+          </div>
+          <div class="diagnostic-metrics" id="qualityMetricGrid"></div>
+          <article class="panel">
+            <div class="panel-head">
+              <h3>Top 能力资产</h3>
+              <span class="small-label">quality score</span>
+            </div>
+            <div class="diagnostic-list" id="qualityList"></div>
+          </article>
+        </section>
+
         <section id="comparison" class="section">
           <div class="section-heading">
-            <h2>对比实验预留</h2>
-            <span class="muted">MetaCode vs 传统 AI 编程</span>
+            <h2>对比实验</h2>
+            <span class="muted">MetaCode vs 传统 AI 编程的最小记录器。</span>
           </div>
           <div class="comparison-grid" id="comparisonGrid"></div>
         </section>
@@ -312,6 +363,6 @@
       </main>
     </div>
 
-    <script src="./app.js"></script>
+    <script src="./app.js?v=stage18"></script>
   </body>
 </html>

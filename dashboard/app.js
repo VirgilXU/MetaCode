@@ -8,6 +8,9 @@ const files = {
   failures: "failures.json",
   stages: "stages.json",
   workflows: "workflow_graph.json",
+  comparison: "comparison_experiments.json",
+  generatedReviews: "generated_workflow_reviews.json",
+  capabilityQuality: "capability_quality.json",
   repairs: "repair_metrics.json",
   repairEvents: "repair_events.json",
   reuse: "reuse_summary.json",
@@ -22,6 +25,8 @@ const state = {
   lastRefreshAt: null,
   workflowFilter: "all",
   selectedWorkflowId: null,
+  selectedRepairEventId: null,
+  repairActionStatus: "仅 API 模式可触发。",
   refreshTimer: null,
 };
 
@@ -91,6 +96,17 @@ async function loadJson(url) {
   return response.json();
 }
 
+async function postJson(url, payload) {
+  const response = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.message || `Failed to post ${url}`);
+  return data;
+}
+
 async function loadFromApi() {
   const payload = await loadJson(`${API_BASE}/monitoring`);
   return {
@@ -99,6 +115,9 @@ async function loadFromApi() {
     failures: payload.failures,
     stages: payload.stages,
     workflows: payload.workflows,
+    comparison: payload.comparison,
+    generatedReviews: payload.generatedReviews,
+    capabilityQuality: payload.capabilityQuality,
     repairs: payload.repairs || buildRepairMetrics(payload.runs || [], payload.workflows || []),
     repairEvents: payload.repairEvents || buildRepairEvents(payload.runs || [], payload.workflows || []),
     reuse: payload.reuse,
@@ -121,7 +140,7 @@ async function loadFromStaticExports() {
     repairEvents: data.repairEvents || buildRepairEvents(data.runs || [], data.workflows || []),
     api: {
       mode: "static-fallback",
-      version: "stage13-compatible",
+      version: "stage16-compatible",
       endpoints: Object.values(files).map((file) => `${STATIC_EXPORT_BASE}/${file}`),
     },
   };
@@ -576,7 +595,7 @@ function setHealth(summary) {
   const pill = document.querySelector("#healthPill");
   const healthy = summary.unresolved_field_count === 0 && summary.current_stage >= 13;
   const source = state.dataSource === "api" ? "API" : "Static";
-  pill.textContent = healthy ? `Stage 13 ${source}` : "Needs Review";
+  pill.textContent = healthy ? `Stage ${summary.current_stage ?? "-"} ${source}` : "Needs Review";
   pill.className = `status-pill ${healthy ? "ok" : "warn"}`;
 }
 
@@ -891,6 +910,70 @@ function eventStatusLabel(status) {
   }[status] || status;
 }
 
+function repairableWorkflows() {
+  return (state.data?.workflows || []).filter((workflow) => workflow.status_type === "intentional_failure");
+}
+
+function allRepairEvents() {
+  const repairEvents = state.data.repairEvents || buildRepairEvents(state.data.runs || [], state.data.workflows || []);
+  return repairEvents.events || [];
+}
+
+function selectedRepairEvent() {
+  const events = allRepairEvents();
+  return (
+    events.find((event) => event.repair_id === state.selectedRepairEventId) ||
+    (state.data.repairEvents?.summary || {}).latest_event ||
+    events[events.length - 1] ||
+    null
+  );
+}
+
+function renderRepairActionPanel() {
+  const select = document.querySelector("#repairWorkflowSelect");
+  const workflows = repairableWorkflows();
+  select.innerHTML = workflows.length
+    ? workflows
+        .map(
+          (workflow) => `
+            <option value="${escapeHtml(workflow.workflow_path)}">${escapeHtml(workflow.workflow_id)}</option>
+          `,
+        )
+        .join("")
+    : `<option value="">暂无失败样例</option>`;
+  select.disabled = !workflows.length || state.dataSource !== "api";
+  document.querySelector("#fixWorkflowBtn").disabled = !workflows.length || state.dataSource !== "api";
+  document.querySelector("#planWorkflowBtn").disabled = !workflows.length || state.dataSource !== "api";
+  document.querySelector("#repairActionStatus").textContent =
+    state.dataSource === "api" ? state.repairActionStatus : "静态 JSON 回退模式不可触发。";
+}
+
+function renderRepairEventDetail() {
+  const event = selectedRepairEvent();
+  const target = document.querySelector("#repairEventDetail");
+  if (!event) {
+    target.innerHTML = `<div class="empty-state">选择最近事件查看详情。</div>`;
+    return;
+  }
+
+  const suggestionList = (event.suggestions || [])
+    .map((suggestion) => `${suggestion.metacode_id}${suggestion.ready ? " ready" : ""}`)
+    .join(", ");
+  target.innerHTML = `
+    <div class="detail-grid">
+      <div class="kv-row"><span>Repair ID</span><strong>${escapeHtml(event.repair_id)}</strong></div>
+      <div class="kv-row"><span>Source</span><strong>${escapeHtml(event.source_workflow_id)}</strong></div>
+      <div class="kv-row"><span>Failure</span><strong>${escapeHtml(event.failure_run_id || "-")}</strong></div>
+      <div class="kv-row"><span>Missing</span><strong>${escapeHtml((event.missing_fields || []).join(", ") || "-")}</strong></div>
+      <div class="kv-row"><span>Suggestions</span><strong>${escapeHtml(suggestionList || "-")}</strong></div>
+      <div class="kv-row"><span>Generated</span><strong>${escapeHtml(event.generated_workflow_id || "-")}</strong></div>
+      <div class="kv-row"><span>Inserted</span><strong>${escapeHtml((event.inserted_steps || []).join(" -> ") || "-")}</strong></div>
+      <div class="kv-row"><span>Verification</span><strong>${escapeHtml(event.verification_run_id || "-")}</strong></div>
+      <div class="kv-row"><span>Status</span><strong>${escapeHtml(eventStatusLabel(event.event_status))}</strong></div>
+    </div>
+  `;
+}
+
 function renderRepairEventMetrics() {
   const repairEvents = state.data.repairEvents || buildRepairEvents(state.data.runs || [], state.data.workflows || []);
   const summary = repairEvents.summary || {};
@@ -953,7 +1036,9 @@ function renderRepairEventList(selector, rows, renderer) {
 
 function renderRepairEvents() {
   const repairEvents = state.data.repairEvents || buildRepairEvents(state.data.runs || [], state.data.workflows || []);
+  renderRepairActionPanel();
   renderRepairEventMetrics();
+  renderRepairEventDetail();
 
   renderRepairEventList("#repairEventWorkflowList", repairEvents.by_workflow, (row) => `
     <div class="event-row">
@@ -978,15 +1063,22 @@ function renderRepairEvents() {
   `);
 
   renderRepairEventList("#repairEventRecentList", repairEvents.recent_events, (event) => `
-    <div class="event-row">
+    <button class="event-row event-detail-button" type="button" data-repair-id="${escapeHtml(event.repair_id)}">
       <div class="diagnostic-row-head">
         <div class="diagnostic-row-title">${escapeHtml(event.source_workflow_id)}</div>
         <span class="tag ${event.event_status === "closed_success" ? "green" : "red"}">${escapeHtml(eventStatusLabel(event.event_status))}</span>
       </div>
       <div class="diagnostic-row-meta">Failure: ${escapeHtml(event.failure_run_id || "-")}</div>
       <div class="diagnostic-row-meta">Generated: ${escapeHtml(event.generated_workflow_id)} / ${escapeHtml(strategyLabel(event.strategy))}</div>
-    </div>
+    </button>
   `);
+
+  document.querySelectorAll(".event-detail-button").forEach((button) => {
+    button.addEventListener("click", () => {
+      state.selectedRepairEventId = button.dataset.repairId;
+      renderRepairEventDetail();
+    });
+  });
 }
 
 function workflowTypeLabel(type) {
@@ -1167,6 +1259,49 @@ function renderMiniGraph() {
   renderNodeList("#bridgeNodes", summary.bridge_nodes, "bridge");
 }
 
+function renderCapabilityQuality() {
+  const quality = state.data.capabilityQuality || { summary: {}, records: [] };
+  const summary = quality.summary || {};
+  const top = summary.top_metacode || {};
+  const metrics = [
+    ["已评分能力", summary.scored_count || 0, `${summary.metacode_count || 0} 个 metacode`],
+    ["核心能力", summary.core_count || 0, `${summary.strong_count || 0} 个 strong`],
+    ["修复贡献能力", summary.repair_contributor_count || 0, `资产增量 ${summary.comparison_asset_delta || 0}`],
+    ["最高分", top.quality_score || 0, top.metacode_id || "-"],
+  ];
+  document.querySelector("#qualityMetricGrid").innerHTML = metrics
+    .map(
+      ([label, value, note]) => `
+        <article class="metric-card">
+          <div class="metric-label">${escapeHtml(label)}</div>
+          <div class="metric-value">${typeof value === "number" ? formatNumber(value) : escapeHtml(value)}</div>
+          <div class="metric-note">${escapeHtml(note)}</div>
+        </article>
+      `,
+    )
+    .join("");
+
+  const records = quality.records || [];
+  document.querySelector("#qualityList").innerHTML = records.length
+    ? records
+        .slice(0, 8)
+        .map(
+          (record) => `
+            <div class="diagnostic-row">
+              <div class="diagnostic-row-head">
+                <div class="diagnostic-row-title">${escapeHtml(record.metacode_id)}</div>
+                <span class="tag ${record.quality_tier === "core" ? "green" : "blue"}">${escapeHtml(record.quality_tier)}</span>
+              </div>
+              <div class="diagnostic-row-meta">Score: ${formatNumber(record.quality_score)} / Usage: ${formatNumber(record.usage_count)} / Bridge: ${formatNumber(record.bridge_score)}</div>
+              <div class="diagnostic-row-meta">Repair: ${formatNumber(record.repair_contribution_count)} / Ready suggestions: ${formatNumber(record.ready_suggestion_count)} / Failures: ${formatNumber(record.failure_count)}</div>
+              <div class="diagnostic-row-meta">${escapeHtml(record.purpose || "-")}</div>
+            </div>
+          `,
+        )
+        .join("")
+    : `<div class="empty-state">暂无能力质量数据</div>`;
+}
+
 function renderStages() {
   const stages = state.data.stages;
   document.querySelector("#stageTimeline").innerHTML = stages
@@ -1187,18 +1322,90 @@ function renderStages() {
 }
 
 function renderComparison() {
-  document.querySelector("#comparisonGrid").innerHTML = comparisonItems
+  const comparison = state.data.comparison || {};
+  const records = comparison.records || [];
+  if (!records.length) {
+    document.querySelector("#comparisonGrid").innerHTML = comparisonItems
+      .map(
+        (item) => `
+          <article class="comparison-card">
+            <div class="tag blue">${escapeHtml(item.status)}</div>
+            <div class="comparison-title">${escapeHtml(item.title)}</div>
+            <div class="comparison-body"><strong>MetaCode：</strong>${escapeHtml(item.metacode)}</div>
+            <div class="comparison-body"><strong>传统 AI：</strong>${escapeHtml(item.traditional)}</div>
+          </article>
+        `,
+      )
+      .join("");
+    return;
+  }
+
+  const summary = comparison.summary || {};
+  const summaryCard = `
+    <article class="comparison-card">
+      <div class="tag green">Stage 16</div>
+      <div class="comparison-title">实验摘要</div>
+      <div class="comparison-body">记录数：${formatNumber(summary.recorded_count || 0)} / 胜率：${summary.metacode_win_rate ?? 0}%</div>
+      <div class="comparison-body">节省时间：${formatNumber(summary.total_time_saved_minutes || 0)} 分钟 / 资产增量：${formatNumber(summary.reusable_asset_delta || 0)}</div>
+    </article>
+  `;
+  const recordCards = records.slice(0, 5).map((record) => {
+    const result = record.result || {};
+    const metacode = record.metacode || {};
+    const traditional = record.traditional_ai || {};
+    return `
+      <article class="comparison-card">
+        <div class="tag ${result.winner === "metacode" ? "green" : "amber"}">${escapeHtml(result.winner || "unknown")}</div>
+        <div class="comparison-title">${escapeHtml(record.title || record.experiment_id)}</div>
+        <div class="comparison-body"><strong>任务：</strong>${escapeHtml(record.task || "-")}</div>
+        <div class="comparison-body"><strong>MetaCode：</strong>${formatNumber(metacode.duration_minutes || 0)} 分钟 / ${formatNumber(metacode.reusable_assets_added || 0)} 资产</div>
+        <div class="comparison-body"><strong>传统 AI：</strong>${formatNumber(traditional.duration_minutes || 0)} 分钟 / ${formatNumber(traditional.reusable_assets_added || 0)} 资产</div>
+        <div class="comparison-body">${escapeHtml(result.takeaway || "-")}</div>
+      </article>
+    `;
+  });
+  document.querySelector("#comparisonGrid").innerHTML = [summaryCard, ...recordCards].join("");
+}
+
+function renderGeneratedReviews() {
+  const reviews = state.data.generatedReviews || { summary: {}, records: [] };
+  const summary = reviews.summary || {};
+  const metrics = [
+    ["生成 Workflow", summary.generated_workflow_count || 0, `${summary.reviewed_count || 0} 条已审核`],
+    ["审核覆盖率", `${summary.review_coverage_rate ?? 0}%`, `${summary.pending_count || 0} 条待审核`],
+    ["已接受", summary.accepted_count || 0, `${summary.rejected_count || 0} 条拒绝`],
+    ["提升就绪", summary.promotion_ready_count || 0, `${summary.promotion_ready_rate ?? 0}% ready`],
+  ];
+  document.querySelector("#reviewMetricGrid").innerHTML = metrics
     .map(
-      (item) => `
-        <article class="comparison-card">
-          <div class="tag blue">${escapeHtml(item.status)}</div>
-          <div class="comparison-title">${escapeHtml(item.title)}</div>
-          <div class="comparison-body"><strong>MetaCode：</strong>${escapeHtml(item.metacode)}</div>
-          <div class="comparison-body"><strong>传统 AI：</strong>${escapeHtml(item.traditional)}</div>
+      ([label, value, note]) => `
+        <article class="metric-card">
+          <div class="metric-label">${escapeHtml(label)}</div>
+          <div class="metric-value">${typeof value === "number" ? formatNumber(value) : escapeHtml(value)}</div>
+          <div class="metric-note">${escapeHtml(note)}</div>
         </article>
       `,
     )
     .join("");
+
+  const rows = reviews.records || [];
+  document.querySelector("#reviewWorkflowList").innerHTML = rows.length
+    ? rows
+        .map(
+          (record) => `
+            <div class="repair-row">
+              <div class="diagnostic-row-head">
+                <div class="diagnostic-row-title">${escapeHtml(record.generated_workflow_id)}</div>
+                <span class="tag ${record.review_status === "accepted" ? "green" : "amber"}">${escapeHtml(record.review_status)}</span>
+              </div>
+              <div class="diagnostic-row-meta">Source: ${escapeHtml(record.source_workflow_id || "-")} / ${escapeHtml(strategyLabel(record.strategy))}</div>
+              <div class="diagnostic-row-meta">Promotion: ${escapeHtml(record.promotion_status || "candidate")} / ${record.promotion_ready ? "ready" : "not ready"}</div>
+              <div class="diagnostic-row-meta">${escapeHtml(record.notes || "-")}</div>
+            </div>
+          `,
+        )
+        .join("")
+    : `<div class="empty-state">暂无 generated workflow 审核记录</div>`;
 }
 
 function renderReports() {
@@ -1246,7 +1453,9 @@ function renderAll() {
   renderWorkflows();
   renderFailures();
   renderMiniGraph();
+  renderCapabilityQuality();
   renderComparison();
+  renderGeneratedReviews();
   renderReports();
   renderExtensions();
   document.querySelector("#lastUpdated").textContent = `最后导出 ${formatTime(summary.last_exported_at)}`;
@@ -1254,6 +1463,8 @@ function renderAll() {
 
 function bindEvents() {
   document.querySelector("#refreshBtn").addEventListener("click", refresh);
+  document.querySelector("#fixWorkflowBtn").addEventListener("click", () => triggerRepair("fixed"));
+  document.querySelector("#planWorkflowBtn").addEventListener("click", () => triggerRepair("planned"));
   document.querySelector("#autoRefreshToggle").addEventListener("change", () => {
     if (state.data) {
       renderStageGates(state.data.summary);
@@ -1278,6 +1489,26 @@ function bindEvents() {
       link.classList.add("active");
     });
   });
+}
+
+async function triggerRepair(strategy) {
+  const select = document.querySelector("#repairWorkflowSelect");
+  const workflowPath = select.value;
+  if (!workflowPath) return;
+
+  state.repairActionStatus = `${strategyLabel(strategy)} 修复执行中`;
+  renderRepairActionPanel();
+  try {
+    const endpoint = strategy === "fixed" ? "/repair/fix-workflow" : "/repair/plan-workflow";
+    const response = await postJson(`${API_BASE}${endpoint}`, { workflow_path: workflowPath });
+    state.selectedRepairEventId = response.repair_id;
+    state.repairActionStatus = `${strategyLabel(strategy)} 已生成 ${response.repair_id}`;
+    await refresh();
+  } catch (error) {
+    state.repairActionStatus = error.message;
+    renderRepairActionPanel();
+    console.error(error);
+  }
 }
 
 async function refresh() {

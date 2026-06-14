@@ -1,0 +1,66 @@
+{
+  "records": [
+    {
+      "experiment_id": "comparison-note-summary-001",
+      "title": "Note summary workflow reuse",
+      "task": "Generate a concise summary from a Markdown note.",
+      "date": "2026-06-12",
+      "status": "recorded",
+      "metacode": {
+        "approach": "Reuse existing io.read_markdown_file + text.clean_text_basic + text.simple_summary workflow path.",
+        "duration_minutes": 8,
+        "failure_count": 1,
+        "rework_count": 1,
+        "reusable_assets_added": 1,
+        "notes": "Failure produced structured missing_fields and a reusable fixed workflow."
+      },
+      "traditional_ai": {
+        "approach": "Ask AI to write a one-off Markdown summary script from scratch.",
+        "duration_minutes": 18,
+        "failure_count": 2,
+        "rework_count": 2,
+        "reusable_assets_added": 0,
+        "notes": "Output can work, but the path is not captured as a reusable workflow asset."
+      },
+      "result": {
+        "winner": "metacode",
+        "time_saved_minutes": 10,
+        "failure_delta": -1,
+        "rework_delta": -1,
+        "reusable_asset_delta": 1,
+        "takeaway": "MetaCode becomes more valuable after reusable capabilities and failure repair records already exist."
+      }
+    },
+    {
+      "experiment_id": "comparison-repair-chain-001",
+      "title": "Repair chain traceability",
+      "task": "Diagnose a broken workflow and produce a verified repair path.",
+      "date": "2026-06-12",
+      "status": "recorded",
+      "metacode": {
+        "approach": "Use missing_fields diagnosis, fixed/planned repair, repair_id, and repair event export.",
+        "duration_minutes": 12,
+        "failure_count": 1,
+        "rework_count": 1,
+        "reusable_assets_added": 2,
+        "notes": "Repair can be traced from failure to suggestion to generated workflow to verification."
+      },
+      "traditional_ai": {
+        "approach": "Paste the error into AI and ask for a corrected workflow manually.",
+        "duration_minutes": 25,
+        "failure_count": 3,
+        "rework_count": 3,
+        "reusable_assets_added": 0,
+        "notes": "Manual repair may succeed, but traceability depends on chat history."
+      },
+      "result": {
+        "winner": "metacode",
+        "time_saved_minutes": 13,
+        "failure_delta": -2,
+        "rework_delta": -2,
+        "reusable_asset_delta": 2,
+        "takeaway": "Structured repair events are the main advantage over ad hoc prompting."
+      }
+    }
+  ]
+}

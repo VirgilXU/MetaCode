@@ -53,7 +53,13 @@ def write_jsonl(path: Path, record: dict[str, Any]) -> None:
         handle.write(json.dumps(record, ensure_ascii=False) + "\n")
 
 
-def execute_workflow(root: Path, workflow_path: Path) -> dict[str, Any]:
+def execute_workflow(
+    root: Path,
+    workflow_path: Path,
+    repair_id: str | None = None,
+    repair_strategy: str | None = None,
+    repair_source_workflow_id: str | None = None,
+) -> dict[str, Any]:
     run_id = str(uuid.uuid4())
     started_at = now_iso()
     started = time.perf_counter()
@@ -119,6 +125,10 @@ def execute_workflow(root: Path, workflow_path: Path) -> dict[str, Any]:
             "duration_ms": duration_ms,
             "outputs": context.get("artifacts", {}),
         }
+        if repair_id:
+            record["repair_id"] = repair_id
+            record["repair_strategy"] = repair_strategy
+            record["repair_source_workflow_id"] = repair_source_workflow_id
         write_jsonl(root / "logs" / "run_log.jsonl", record)
         return {"status": "success", "workflow_id": workflow_id, "context": context, **record}
 
@@ -147,6 +157,10 @@ def execute_workflow(root: Path, workflow_path: Path) -> dict[str, Any]:
             "context_keys": available_paths(context),
             "duration_ms": duration_ms,
         }
+        if repair_id:
+            record["repair_id"] = repair_id
+            record["repair_strategy"] = repair_strategy
+            record["repair_source_workflow_id"] = repair_source_workflow_id or workflow_id
         write_jsonl(root / "logs" / "failure_log.jsonl", record)
         return {"status": "failed", "workflow_id": workflow_id, "context": context, **record}
 

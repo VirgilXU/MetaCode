@@ -121,15 +121,23 @@ def build_planned_workflow(
     return planned_workflow
 
 
-def plan_workflow_fix(root: Path, workflow_path: Path, max_depth: int = 4) -> dict[str, Any]:
+def plan_workflow_fix(root: Path, workflow_path: Path, max_depth: int = 4, repair_id: str | None = None) -> dict[str, Any]:
     from core.registry import build_registry
 
     workflow = load_yaml(workflow_path)
     original_steps = list(workflow.get("steps", []))
-    result = execute_workflow(root, workflow_path)
+    workflow_id = workflow.get("id", workflow_path.stem)
+    result = execute_workflow(
+        root,
+        workflow_path,
+        repair_id=repair_id,
+        repair_strategy="planned" if repair_id else None,
+        repair_source_workflow_id=workflow_id if repair_id else None,
+    )
 
     if result["status"] == "success":
         return {
+            "repair_id": repair_id,
             "status": "not_needed",
             "workflow_id": result["workflow_id"],
             "reason": "workflow already succeeds",
@@ -142,6 +150,7 @@ def plan_workflow_fix(root: Path, workflow_path: Path, max_depth: int = 4) -> di
     )
     if not failed_step:
         return {
+            "repair_id": repair_id,
             "status": "not_planned",
             "workflow_id": result["workflow_id"],
             "reason": "could not infer failed step",
@@ -158,6 +167,7 @@ def plan_workflow_fix(root: Path, workflow_path: Path, max_depth: int = 4) -> di
     )
     if plan_result["status"] != "planned":
         return {
+            "repair_id": repair_id,
             "status": "not_planned",
             "workflow_id": result["workflow_id"],
             "failed_step": failed_step,
@@ -172,8 +182,15 @@ def plan_workflow_fix(root: Path, workflow_path: Path, max_depth: int = 4) -> di
     with output_path.open("w", encoding="utf-8") as handle:
         yaml.safe_dump(planned_workflow, handle, allow_unicode=True, sort_keys=False)
 
-    verification = execute_workflow(root, output_path)
+    verification = execute_workflow(
+        root,
+        output_path,
+        repair_id=repair_id,
+        repair_strategy="planned" if repair_id else None,
+        repair_source_workflow_id=workflow_id if repair_id else None,
+    )
     return {
+        "repair_id": repair_id,
         "status": "planned" if verification["status"] == "success" else "planned_but_failed",
         "workflow_id": result["workflow_id"],
         "failed_step": failed_step,

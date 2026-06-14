@@ -38,11 +38,11 @@ class Stage13RepairEventsTest(unittest.TestCase):
             self.assertEqual(response.status, 200)
             return json.loads(response.read().decode("utf-8"))
 
-    def test_status_endpoint_reports_stage13_api(self):
+    def test_status_endpoint_reports_stage13_or_newer_api(self):
         payload = self.get_json("/api/status")
 
         self.assertEqual(payload["status"], "ok")
-        self.assertEqual(payload["version"], "stage13")
+        self.assertIn(payload["version"], {"stage13", "stage14", "stage16", "stage17", "stage18"})
         self.assertGreaterEqual(payload["current_stage"], 13)
         self.assertIn("repair_event_count", payload["summary"])
 

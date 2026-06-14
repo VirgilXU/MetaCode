@@ -1,9 +1,9 @@
 {
-  "current_stage": 13,
-  "stage_report_count": 12,
+  "current_stage": 18,
+  "stage_report_count": 17,
   "stage_range": {
     "first": 2,
-    "last": 13
+    "last": 18
   },
   "metacode_count": 15,
   "stable_workflow_count": 10,
@@ -11,22 +11,22 @@
   "stable_workflow_file_count": 10,
   "generated_workflow_count": 1,
   "intentional_failure_workflow_count": 2,
-  "run_count": 594,
-  "success_run_count": 440,
-  "failure_run_count": 154,
-  "success_rate": 74.1,
+  "run_count": 927,
+  "success_run_count": 665,
+  "failure_run_count": 262,
+  "success_rate": 71.7,
   "edge_count": 26,
   "field_count": 16,
   "unresolved_field_count": 0,
-  "last_exported_at": "2026-06-11T13:31:07.764849+00:00",
+  "last_exported_at": "2026-06-14T11:25:39.616207+00:00",
   "latest_run": {
-    "run_id": "2cf84d9d-9e0d-4f06-b249-474d2b1fae7f",
+    "run_id": "636211af-f80c-473a-81b5-fb45adf0b354",
     "workflow_id": "note_to_summary",
     "workflow_path": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\workflows\\note_to_summary.yaml",
     "status": "success",
-    "started_at": "2026-06-11T13:21:29.171697+00:00",
-    "ended_at": "2026-06-11T13:21:29.205464+00:00",
-    "duration_ms": 34.031,
+    "started_at": "2026-06-14T11:25:26.522328+00:00",
+    "ended_at": "2026-06-14T11:25:26.551011+00:00",
+    "duration_ms": 27.772,
     "steps": [
       "io.read_markdown_file",
       "text.clean_text_basic",
@@ -43,11 +43,14 @@
       "output_file": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\examples\\outputs\\summary.md"
     },
     "context_keys": [],
-    "source_log": "run_log"
+    "source_log": "run_log",
+    "repair_id": null,
+    "repair_strategy": null,
+    "repair_source_workflow_id": null
   },
-  "repair_attempt_count": 130,
-  "repair_success_count": 130,
+  "repair_attempt_count": 229,
+  "repair_success_count": 229,
   "repair_success_rate": 100.0,
-  "repair_event_count": 130,
+  "repair_event_count": 229,
   "repair_event_link_rate": 100.0
 }

@@ -51,13 +51,21 @@ def build_fixed_workflow(
     return fixed
 
 
-def fix_workflow(root: Path, workflow_path: Path) -> dict[str, Any]:
+def fix_workflow(root: Path, workflow_path: Path, repair_id: str | None = None) -> dict[str, Any]:
     workflow = load_yaml(workflow_path)
     original_steps = list(workflow.get("steps", []))
-    result = execute_workflow(root, workflow_path)
+    workflow_id = workflow.get("id", workflow_path.stem)
+    result = execute_workflow(
+        root,
+        workflow_path,
+        repair_id=repair_id,
+        repair_strategy="fixed" if repair_id else None,
+        repair_source_workflow_id=workflow_id if repair_id else None,
+    )
 
     if result["status"] == "success":
         return {
+            "repair_id": repair_id,
             "status": "not_needed",
             "workflow_id": result["workflow_id"],
             "reason": "workflow already succeeds",
@@ -70,6 +78,7 @@ def fix_workflow(root: Path, workflow_path: Path) -> dict[str, Any]:
     )
     if not failed_step:
         return {
+            "repair_id": repair_id,
             "status": "not_fixed",
             "workflow_id": result["workflow_id"],
             "reason": "could not infer failed step",
@@ -79,6 +88,7 @@ def fix_workflow(root: Path, workflow_path: Path) -> dict[str, Any]:
     suggestion = choose_ready_suggestion(result.get("suggestions", []))
     if not suggestion:
         return {
+            "repair_id": repair_id,
             "status": "not_fixed",
             "workflow_id": result["workflow_id"],
             "reason": "no ready suggestion available",
@@ -92,8 +102,15 @@ def fix_workflow(root: Path, workflow_path: Path) -> dict[str, Any]:
     with output_path.open("w", encoding="utf-8") as handle:
         yaml.safe_dump(fixed, handle, allow_unicode=True, sort_keys=False)
 
-    verification = execute_workflow(root, output_path)
+    verification = execute_workflow(
+        root,
+        output_path,
+        repair_id=repair_id,
+        repair_strategy="fixed" if repair_id else None,
+        repair_source_workflow_id=workflow_id if repair_id else None,
+    )
     return {
+        "repair_id": repair_id,
         "status": "fixed" if verification["status"] == "success" else "fixed_but_failed",
         "workflow_id": result["workflow_id"],
         "failed_step": failed_step,

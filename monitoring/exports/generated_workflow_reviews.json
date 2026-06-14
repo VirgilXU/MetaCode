@@ -1,0 +1,34 @@
+{
+  "summary": {
+    "status": "computed",
+    "generated_workflow_count": 1,
+    "review_record_count": 1,
+    "reviewed_count": 1,
+    "pending_count": 0,
+    "accepted_count": 1,
+    "rejected_count": 0,
+    "promotion_ready_count": 1,
+    "review_coverage_rate": 100.0,
+    "promotion_ready_rate": 100.0
+  },
+  "records": [
+    {
+      "generated_workflow_id": "broken_missing_summary_chain_planned",
+      "source_workflow_id": "broken_missing_summary_chain",
+      "strategy": "planned",
+      "workflow_path": "D:\\Virgil\\Virgil\\元代码项目Software DNA\\源码\\workflows\\generated\\broken_missing_summary_chain.planned.yaml",
+      "inserted_steps": [
+        "io.read_markdown_file",
+        "text.clean_text_basic"
+      ],
+      "review_id": "review-broken-missing-summary-chain-planned",
+      "review_status": "accepted",
+      "promotion_status": "ready",
+      "promotion_ready": true,
+      "promotion_target": "manual-stable-workflow-review",
+      "reviewed_by": "metacode-stage17",
+      "reviewed_at": "2026-06-14",
+      "notes": "Generated workflow has a complete validated chain and is ready for manual stable-workflow promotion review."
+    }
+  ]
+}

@@ -1,0 +1,357 @@
+{
+  "summary": {
+    "status": "computed",
+    "metacode_count": 15,
+    "scored_count": 14,
+    "core_count": 2,
+    "strong_count": 3,
+    "useful_count": 9,
+    "emerging_count": 1,
+    "top_metacode": {
+      "metacode_id": "text.clean_text_basic",
+      "category": "text",
+      "purpose": "Normalize whitespace in raw text for downstream processing.",
+      "quality_score": 3110,
+      "quality_tier": "core",
+      "usage_count": 5,
+      "bridge_score": 10,
+      "degree": 5,
+      "failure_count": 0,
+      "suggestion_count": 258,
+      "ready_suggestion_count": 175,
+      "repair_contribution_count": 229,
+      "comparison_asset_delta": 3,
+      "reads": [
+        "data.raw_text"
+      ],
+      "writes": [
+        "data.clean_text"
+      ]
+    },
+    "repair_contributor_count": 2,
+    "comparison_asset_delta": 3
+  },
+  "records": [
+    {
+      "metacode_id": "text.clean_text_basic",
+      "category": "text",
+      "purpose": "Normalize whitespace in raw text for downstream processing.",
+      "quality_score": 3110,
+      "quality_tier": "core",
+      "usage_count": 5,
+      "bridge_score": 10,
+      "degree": 5,
+      "failure_count": 0,
+      "suggestion_count": 258,
+      "ready_suggestion_count": 175,
+      "repair_contribution_count": 229,
+      "comparison_asset_delta": 3,
+      "reads": [
+        "data.raw_text"
+      ],
+      "writes": [
+        "data.clean_text"
+      ]
+    },
+    {
+      "metacode_id": "io.read_markdown_file",
+      "category": "io",
+      "purpose": "Read a markdown file from inputs.file_path into data.raw_text.",
+      "quality_score": 1190,
+      "quality_tier": "core",
+      "usage_count": 6,
+      "bridge_score": 8,
+      "degree": 2,
+      "failure_count": 0,
+      "suggestion_count": 0,
+      "ready_suggestion_count": 0,
+      "repair_contribution_count": 107,
+      "comparison_asset_delta": 3,
+      "reads": [
+        "inputs.file_path"
+      ],
+      "writes": [
+        "data.raw_text"
+      ]
+    },
+    {
+      "metacode_id": "io.write_markdown",
+      "category": "io",
+      "purpose": "Write a markdown report from available context data.",
+      "quality_score": 108,
+      "quality_tier": "strong",
+      "usage_count": 6,
+      "bridge_score": 6,
+      "degree": 0,
+      "failure_count": 0,
+      "suggestion_count": 0,
+      "ready_suggestion_count": 0,
+      "repair_contribution_count": 0,
+      "comparison_asset_delta": 0,
+      "reads": [
+        "inputs.output_path"
+      ],
+      "writes": [
+        "artifacts.output_file"
+      ]
+    },
+    {
+      "metacode_id": "io.save_csv",
+      "category": "io",
+      "purpose": "Save data.rows as a CSV file.",
+      "quality_score": 102,
+      "quality_tier": "strong",
+      "usage_count": 4,
+      "bridge_score": 9,
+      "degree": 5,
+      "failure_count": 0,
+      "suggestion_count": 0,
+      "ready_suggestion_count": 0,
+      "repair_contribution_count": 0,
+      "comparison_asset_delta": 0,
+      "reads": [
+        "data.rows",
+        "inputs.output_path"
+      ],
+      "writes": [
+        "artifacts.output_file"
+      ]
+    },
+    {
+      "metacode_id": "transform.json_items_to_rows",
+      "category": "transform",
+      "purpose": "Convert a JSON list or object with items into data.rows.",
+      "quality_score": 102,
+      "quality_tier": "strong",
+      "usage_count": 4,
+      "bridge_score": 9,
+      "degree": 5,
+      "failure_count": 0,
+      "suggestion_count": 0,
+      "ready_suggestion_count": 0,
+      "repair_contribution_count": 0,
+      "comparison_asset_delta": 0,
+      "reads": [
+        "data.json"
+      ],
+      "writes": [
+        "data.rows"
+      ]
+    },
+    {
+      "metacode_id": "io.read_json_file",
+      "category": "io",
+      "purpose": "Read a JSON file from inputs.file_path into data.json.",
+      "quality_score": 78,
+      "quality_tier": "useful",
+      "usage_count": 4,
+      "bridge_score": 5,
+      "degree": 1,
+      "failure_count": 0,
+      "suggestion_count": 0,
+      "ready_suggestion_count": 0,
+      "repair_contribution_count": 0,
+      "comparison_asset_delta": 0,
+      "reads": [
+        "inputs.file_path"
+      ],
+      "writes": [
+        "data.json"
+      ]
+    },
+    {
+      "metacode_id": "text.extract_markdown_headings",
+      "category": "text",
+      "purpose": "Extract markdown headings from data.raw_text.",
+      "quality_score": 72,
+      "quality_tier": "useful",
+      "usage_count": 3,
+      "bridge_score": 6,
+      "degree": 3,
+      "failure_count": 0,
+      "suggestion_count": 0,
+      "ready_suggestion_count": 0,
+      "repair_contribution_count": 0,
+      "comparison_asset_delta": 0,
+      "reads": [
+        "data.raw_text"
+      ],
+      "writes": [
+        "data.headings"
+      ]
+    },
+    {
+      "metacode_id": "data.filter_rows_contains",
+      "category": "data",
+      "purpose": "Keep rows whose inputs.filter_field contains inputs.filter_value.",
+      "quality_score": 60,
+      "quality_tier": "useful",
+      "usage_count": 1,
+      "bridge_score": 8,
+      "degree": 7,
+      "failure_count": 0,
+      "suggestion_count": 0,
+      "ready_suggestion_count": 0,
+      "repair_contribution_count": 0,
+      "comparison_asset_delta": 0,
+      "reads": [
+        "data.rows",
+        "inputs.filter_field",
+        "inputs.filter_value"
+      ],
+      "writes": [
+        "data.rows"
+      ]
+    },
+    {
+      "metacode_id": "data.pick_fields",
+      "category": "data",
+      "purpose": "Keep only inputs.fields from data.rows.",
+      "quality_score": 60,
+      "quality_tier": "useful",
+      "usage_count": 1,
+      "bridge_score": 8,
+      "degree": 7,
+      "failure_count": 0,
+      "suggestion_count": 0,
+      "ready_suggestion_count": 0,
+      "repair_contribution_count": 0,
+      "comparison_asset_delta": 0,
+      "reads": [
+        "data.rows",
+        "inputs.fields"
+      ],
+      "writes": [
+        "data.rows"
+      ]
+    },
+    {
+      "metacode_id": "data.sort_rows",
+      "category": "data",
+      "purpose": "Sort data.rows by inputs.sort_field.",
+      "quality_score": 60,
+      "quality_tier": "useful",
+      "usage_count": 1,
+      "bridge_score": 8,
+      "degree": 7,
+      "failure_count": 0,
+      "suggestion_count": 0,
+      "ready_suggestion_count": 0,
+      "repair_contribution_count": 0,
+      "comparison_asset_delta": 0,
+      "reads": [
+        "data.rows",
+        "inputs.sort_field"
+      ],
+      "writes": [
+        "data.rows"
+      ]
+    },
+    {
+      "metacode_id": "analysis.count_text_stats",
+      "category": "analysis",
+      "purpose": "Count simple text metrics from data.clean_text and data.headings.",
+      "quality_score": 48,
+      "quality_tier": "useful",
+      "usage_count": 2,
+      "bridge_score": 4,
+      "degree": 2,
+      "failure_count": 0,
+      "suggestion_count": 0,
+      "ready_suggestion_count": 0,
+      "repair_contribution_count": 0,
+      "comparison_asset_delta": 0,
+      "reads": [
+        "data.clean_text",
+        "data.headings"
+      ],
+      "writes": [
+        "data.text_stats"
+      ]
+    },
+    {
+      "metacode_id": "transform.headings_to_rows",
+      "category": "transform",
+      "purpose": "Convert data.headings into tabular data.rows.",
+      "quality_score": 48,
+      "quality_tier": "useful",
+      "usage_count": 1,
+      "bridge_score": 6,
+      "degree": 5,
+      "failure_count": 0,
+      "suggestion_count": 0,
+      "ready_suggestion_count": 0,
+      "repair_contribution_count": 0,
+      "comparison_asset_delta": 0,
+      "reads": [
+        "data.headings"
+      ],
+      "writes": [
+        "data.rows"
+      ]
+    },
+    {
+      "metacode_id": "analysis.count_frequency",
+      "category": "analysis",
+      "purpose": "Count simple word frequency from data.clean_text.",
+      "quality_score": 42,
+      "quality_tier": "useful",
+      "usage_count": 2,
+      "bridge_score": 3,
+      "degree": 1,
+      "failure_count": 0,
+      "suggestion_count": 0,
+      "ready_suggestion_count": 0,
+      "repair_contribution_count": 0,
+      "comparison_asset_delta": 0,
+      "reads": [
+        "data.clean_text"
+      ],
+      "writes": [
+        "data.frequency"
+      ]
+    },
+    {
+      "metacode_id": "text.extract_keywords_basic",
+      "category": "text",
+      "purpose": "Extract simple keywords from data.clean_text.",
+      "quality_score": 42,
+      "quality_tier": "useful",
+      "usage_count": 2,
+      "bridge_score": 3,
+      "degree": 1,
+      "failure_count": 0,
+      "suggestion_count": 0,
+      "ready_suggestion_count": 0,
+      "repair_contribution_count": 0,
+      "comparison_asset_delta": 0,
+      "reads": [
+        "data.clean_text"
+      ],
+      "writes": [
+        "data.keywords"
+      ]
+    },
+    {
+      "metacode_id": "text.simple_summary",
+      "category": "text",
+      "purpose": "Create a rule-based short summary from data.clean_text.",
+      "quality_score": 0,
+      "quality_tier": "emerging",
+      "usage_count": 2,
+      "bridge_score": 3,
+      "degree": 1,
+      "failure_count": 262,
+      "suggestion_count": 0,
+      "ready_suggestion_count": 0,
+      "repair_contribution_count": 0,
+      "comparison_asset_delta": 0,
+      "reads": [
+        "data.clean_text"
+      ],
+      "writes": [
+        "data.summary"
+      ]
+    }
+  ]
+}

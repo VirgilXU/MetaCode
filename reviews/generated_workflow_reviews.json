@@ -1,0 +1,17 @@
+{
+  "reviews": [
+    {
+      "review_id": "review-broken-missing-summary-chain-planned",
+      "generated_workflow_id": "broken_missing_summary_chain_planned",
+      "source_workflow_id": "broken_missing_summary_chain",
+      "strategy": "planned",
+      "review_status": "accepted",
+      "promotion_status": "ready",
+      "promotion_ready": true,
+      "reviewed_by": "metacode-stage17",
+      "reviewed_at": "2026-06-14",
+      "promotion_target": "manual-stable-workflow-review",
+      "notes": "Generated workflow has a complete validated chain and is ready for manual stable-workflow promotion review."
+    }
+  ]
+}

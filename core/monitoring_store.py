@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import re
 import sqlite3
+from collections import Counter
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -25,6 +26,11 @@ def write_json(path: Path, data: Any) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", encoding="utf-8") as handle:
         json.dump(data, handle, ensure_ascii=False, indent=2)
+
+
+def read_json(path: Path) -> Any:
+    with path.open("r", encoding="utf-8") as handle:
+        return json.load(handle)
 
 
 def read_jsonl(path: Path) -> list[dict[str, Any]]:
@@ -69,6 +75,9 @@ def normalize_run_record(record: dict[str, Any], index: int, source_log: str) ->
         "outputs": record.get("outputs", {}),
         "context_keys": record.get("context_keys", []),
         "source_log": source_log,
+        "repair_id": record.get("repair_id"),
+        "repair_strategy": record.get("repair_strategy"),
+        "repair_source_workflow_id": record.get("repair_source_workflow_id"),
     }
 
 
@@ -133,6 +142,190 @@ def collect_workflows(root: Path) -> list[dict[str, Any]]:
             }
         )
     return workflows
+
+
+def collect_comparison_experiments(root: Path) -> dict[str, Any]:
+    path = root / "experiments" / "comparison_records.json"
+    if not path.exists():
+        records: list[dict[str, Any]] = []
+    else:
+        payload = read_json(path)
+        records = payload.get("records", [])
+
+    recorded = [record for record in records if record.get("status") == "recorded"]
+    metacode_wins = [record for record in recorded if record.get("result", {}).get("winner") == "metacode"]
+    time_saved = sum(record.get("result", {}).get("time_saved_minutes", 0) for record in recorded)
+    reusable_asset_delta = sum(record.get("result", {}).get("reusable_asset_delta", 0) for record in recorded)
+    return {
+        "summary": {
+            "status": "computed",
+            "experiment_count": len(records),
+            "recorded_count": len(recorded),
+            "metacode_win_count": len(metacode_wins),
+            "metacode_win_rate": rate(len(metacode_wins), len(recorded)),
+            "total_time_saved_minutes": time_saved,
+            "reusable_asset_delta": reusable_asset_delta,
+            "latest_experiment": records[-1] if records else None,
+        },
+        "records": records,
+    }
+
+
+def collect_generated_workflow_reviews(root: Path, workflows: list[dict[str, Any]]) -> dict[str, Any]:
+    path = root / "reviews" / "generated_workflow_reviews.json"
+    if path.exists():
+        review_rows = read_json(path).get("reviews", [])
+    else:
+        review_rows = []
+
+    reviews_by_workflow = {row.get("generated_workflow_id"): row for row in review_rows}
+    generated_workflows = [
+        workflow for workflow in workflows if str(workflow.get("status_type", "")).startswith("generated")
+    ]
+    records = []
+    for workflow in generated_workflows:
+        workflow_id = workflow["workflow_id"]
+        review = reviews_by_workflow.get(workflow_id, {})
+        review_status = review.get("review_status", "pending")
+        promotion_ready = bool(review.get("promotion_ready", False))
+        records.append(
+            {
+                "generated_workflow_id": workflow_id,
+                "source_workflow_id": workflow.get("generated_from"),
+                "strategy": infer_repair_strategy(workflow_id, workflow),
+                "workflow_path": workflow.get("workflow_path"),
+                "inserted_steps": workflow.get("inserted_steps", []),
+                "review_id": review.get("review_id"),
+                "review_status": review_status,
+                "promotion_status": review.get("promotion_status", "candidate"),
+                "promotion_ready": promotion_ready,
+                "promotion_target": review.get("promotion_target"),
+                "reviewed_by": review.get("reviewed_by"),
+                "reviewed_at": review.get("reviewed_at"),
+                "notes": review.get("notes", ""),
+            }
+        )
+
+    reviewed = [record for record in records if record["review_status"] != "pending"]
+    accepted = [record for record in records if record["review_status"] == "accepted"]
+    rejected = [record for record in records if record["review_status"] == "rejected"]
+    ready = [record for record in records if record["promotion_ready"]]
+    return {
+        "summary": {
+            "status": "computed",
+            "generated_workflow_count": len(generated_workflows),
+            "review_record_count": len(review_rows),
+            "reviewed_count": len(reviewed),
+            "pending_count": len(records) - len(reviewed),
+            "accepted_count": len(accepted),
+            "rejected_count": len(rejected),
+            "promotion_ready_count": len(ready),
+            "review_coverage_rate": rate(len(reviewed), len(records)),
+            "promotion_ready_rate": rate(len(ready), len(records)),
+        },
+        "records": records,
+    }
+
+
+def quality_tier(score: int) -> str:
+    if score >= 120:
+        return "core"
+    if score >= 80:
+        return "strong"
+    if score >= 40:
+        return "useful"
+    return "emerging"
+
+
+def build_capability_quality(
+    registry: dict[str, dict[str, Any]],
+    graph: dict[str, Any],
+    reuse_summary: dict[str, Any],
+    runs: list[dict[str, Any]],
+    repair_events: dict[str, Any],
+    comparison: dict[str, Any],
+) -> dict[str, Any]:
+    failure_counts = Counter(run.get("failed_step") for run in runs if run.get("status") == "failed")
+    suggestion_counts: Counter[str] = Counter()
+    ready_suggestion_counts: Counter[str] = Counter()
+    for run in runs:
+        if run.get("status") != "failed":
+            continue
+        for suggestion in run.get("suggestions", []):
+            metacode_id = suggestion.get("metacode_id")
+            if not metacode_id:
+                continue
+            suggestion_counts[metacode_id] += 1
+            if suggestion.get("ready"):
+                ready_suggestion_counts[metacode_id] += 1
+
+    repair_contributions: Counter[str] = Counter()
+    for event in repair_events.get("events", []):
+        for metacode_id in event.get("inserted_steps", []):
+            repair_contributions[metacode_id] += 1
+
+    comparison_asset_delta = comparison.get("summary", {}).get("reusable_asset_delta", 0)
+    usage = reuse_summary.get("usage", {})
+    records = []
+    for metacode_id, identity in registry.items():
+        node = graph.get("nodes", {}).get(metacode_id, {})
+        usage_count = int(usage.get(metacode_id, 0))
+        bridge_score = int(node.get("bridge_score", 0))
+        repair_count = int(repair_contributions.get(metacode_id, 0))
+        ready_count = int(ready_suggestion_counts.get(metacode_id, 0))
+        failed_count = int(failure_counts.get(metacode_id, 0))
+        score = max(
+            0,
+            usage_count * 12
+            + bridge_score * 6
+            + repair_count * 10
+            + ready_count * 4
+            - failed_count * 3,
+        )
+        records.append(
+            {
+                "metacode_id": metacode_id,
+                "category": identity.get("category", ""),
+                "purpose": identity.get("purpose", ""),
+                "quality_score": score,
+                "quality_tier": quality_tier(score),
+                "usage_count": usage_count,
+                "bridge_score": bridge_score,
+                "degree": node.get("degree", 0),
+                "failure_count": failed_count,
+                "suggestion_count": int(suggestion_counts.get(metacode_id, 0)),
+                "ready_suggestion_count": ready_count,
+                "repair_contribution_count": repair_count,
+                "comparison_asset_delta": comparison_asset_delta if repair_count else 0,
+                "reads": list(identity.get("context_read", [])),
+                "writes": list(identity.get("context_write", [])),
+            }
+        )
+
+    records.sort(
+        key=lambda row: (
+            -row["quality_score"],
+            -row["repair_contribution_count"],
+            -row["usage_count"],
+            row["metacode_id"],
+        )
+    )
+    tier_counts = Counter(record["quality_tier"] for record in records)
+    return {
+        "summary": {
+            "status": "computed",
+            "metacode_count": len(records),
+            "scored_count": len([record for record in records if record["quality_score"] > 0]),
+            "core_count": tier_counts.get("core", 0),
+            "strong_count": tier_counts.get("strong", 0),
+            "useful_count": tier_counts.get("useful", 0),
+            "emerging_count": tier_counts.get("emerging", 0),
+            "top_metacode": records[0] if records else None,
+            "repair_contributor_count": len([record for record in records if record["repair_contribution_count"] > 0]),
+            "comparison_asset_delta": comparison_asset_delta,
+        },
+        "records": records,
+    }
 
 
 def infer_repair_strategy(workflow_id: str, workflow: dict[str, Any] | None = None) -> str | None:
@@ -351,30 +544,38 @@ def build_event_rollup(events: list[dict[str, Any]], key: str, id_key: str) -> l
 def build_repair_events(runs: list[dict[str, Any]], workflows: list[dict[str, Any]]) -> dict[str, Any]:
     workflow_by_id = {workflow["workflow_id"]: workflow for workflow in workflows}
     latest_failure_by_workflow: dict[str, dict[str, Any]] = {}
+    latest_failure_by_repair_id: dict[str, dict[str, Any]] = {}
     events: list[dict[str, Any]] = []
 
     for run in runs:
         workflow_id = run.get("workflow_id", "")
         if run.get("status") == "failed":
             latest_failure_by_workflow[workflow_id] = run
+            if run.get("repair_id"):
+                latest_failure_by_repair_id[run["repair_id"]] = run
             continue
 
         workflow = workflow_by_id.get(workflow_id)
-        strategy = infer_repair_strategy(workflow_id, workflow)
+        strategy = run.get("repair_strategy") or infer_repair_strategy(workflow_id, workflow)
         if not strategy:
             continue
 
-        source_workflow_id = infer_repair_source(workflow_id, strategy, workflow)
-        failure = latest_failure_by_workflow.get(source_workflow_id)
+        source_workflow_id = run.get("repair_source_workflow_id") or infer_repair_source(workflow_id, strategy, workflow)
+        failure = (
+            latest_failure_by_repair_id.get(run.get("repair_id"))
+            if run.get("repair_id")
+            else latest_failure_by_workflow.get(source_workflow_id)
+        )
         suggestions = [compact_suggestion(suggestion) for suggestion in (failure or {}).get("suggestions", [])]
         suggested_metacodes = [suggestion["metacode_id"] for suggestion in suggestions if suggestion.get("metacode_id")]
         inserted_steps = list((workflow or {}).get("inserted_steps") or suggested_metacodes)
         verification_status = run.get("status", "unknown")
         event_status = "closed_success" if verification_status == "success" else "closed_failed"
+        repair_id = run.get("repair_id") or f"repair-{run.get('run_id')}"
 
         events.append(
             {
-                "repair_id": f"repair-{run.get('run_id')}",
+                "repair_id": repair_id,
                 "event_status": event_status,
                 "failure_link_status": "linked" if failure else "unlinked",
                 "source_workflow_id": source_workflow_id,
@@ -593,6 +794,9 @@ def write_sqlite_database(root: Path, payload: dict[str, Any]) -> Path:
 
         for key in (
             "dashboard_summary",
+            "comparison",
+            "generated_reviews",
+            "capability_quality",
             "repair_metrics",
             "repair_events",
             "reuse_summary",
@@ -616,14 +820,25 @@ def export_monitoring_data(root: Path) -> dict[str, Any]:
     (monitoring_dir / "stages").mkdir(parents=True, exist_ok=True)
 
     reuse_summary = analyze_reuse(root)
+    registry = build_registry(root)
     graph = build_capability_graph(root)
     graph_summary = summarize_graph(root)
     runs = collect_runs(root)
     failures = [run for run in runs if run["status"] == "failed"]
     stages = collect_stage_reports(root)
     workflows = collect_workflows(root)
+    comparison = collect_comparison_experiments(root)
+    generated_reviews = collect_generated_workflow_reviews(root, workflows)
     repair_metrics = build_repair_metrics(runs, workflows)
     repair_events = build_repair_events(runs, workflows)
+    capability_quality = build_capability_quality(
+        registry,
+        graph,
+        reuse_summary,
+        runs,
+        repair_events,
+        comparison,
+    )
     summary = dashboard_summary(reuse_summary, graph_summary, runs, stages, workflows)
     summary["repair_attempt_count"] = repair_metrics["summary"]["attempt_count"]
     summary["repair_success_count"] = repair_metrics["summary"]["success_count"]
@@ -637,6 +852,9 @@ def export_monitoring_data(root: Path) -> dict[str, Any]:
         "failures": failures,
         "stages": stages,
         "workflows": workflows,
+        "comparison": comparison,
+        "generated_reviews": generated_reviews,
+        "capability_quality": capability_quality,
         "repair_metrics": repair_metrics,
         "repair_events": repair_events,
         "reuse_summary": reuse_summary,
@@ -649,6 +867,9 @@ def export_monitoring_data(root: Path) -> dict[str, Any]:
     write_json(exports_dir / "failures.json", failures)
     write_json(exports_dir / "stages.json", stages)
     write_json(exports_dir / "workflow_graph.json", workflows)
+    write_json(exports_dir / "comparison_experiments.json", comparison)
+    write_json(exports_dir / "generated_workflow_reviews.json", generated_reviews)
+    write_json(exports_dir / "capability_quality.json", capability_quality)
     write_json(exports_dir / "repair_metrics.json", repair_metrics)
     write_json(exports_dir / "repair_events.json", repair_events)
     write_json(exports_dir / "reuse_summary.json", reuse_summary)
